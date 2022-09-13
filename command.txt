@@ -1,0 +1,7 @@
+run 'pip install wandb' to automatically track and visualize YOLOv5  runs in Weights & Biases
+
+without changing model architecture:
+python train.py --img 640 --batch 16 --epochs 1 --weights yolov5n.pt --data dataset.yaml --hyp hyp.yaml
+
+with changing model architecture:
+python train.py --img 640 --batch 16 --epochs 1 --weights yolov5n.pt --data dataset.yaml --hyp hyp.yaml --cfg model.yaml

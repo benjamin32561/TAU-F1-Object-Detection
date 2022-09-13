@@ -22,7 +22,7 @@ cone_class_label = {
     "other_cone":4
 }
 
-src_path = "dataset/ampera/" #dataset/.../
+src_path = "dataset/amz/" #dataset/.../
 src_images = src_path+"images/"
 src_labels = src_path+"labels/"
 dst_images = "yolov5_dataset/images"
