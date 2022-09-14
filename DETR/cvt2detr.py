@@ -29,7 +29,7 @@ def main():
                 print("{0}/{1}".format(img_idx,nof))
 
             #get current phase in split
-            phase = GetCurrentPhase(nof, img_idx, PHASES)
+            phase = GetCurrentPhase(nof, img_idx)
             dst_images = DST_PATH+phase
 
             #save image in new location with correct format

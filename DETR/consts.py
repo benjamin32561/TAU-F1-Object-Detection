@@ -24,7 +24,15 @@ IMAGES = "images"
 ANNO = "annotations"
 
 
-
+"""
+description: extracts image data to add to COCO dataset
+input:
+    img_json_data - image json data (from original file)
+    short_filename - image file name without extention
+    img_id - image id (COCO format)
+output: 
+    dict - the final image data to add to the COCO format dataset
+"""
 def GetImageDataToAdd(img_json_data:dict,short_filename:str,img_id:int):
     #extract image data from json
     img_h, img_w = GetImgWHFromJson(img_json_data)
@@ -40,6 +48,15 @@ def GetImageDataToAdd(img_json_data:dict,short_filename:str,img_id:int):
             "id": img_id
         }
 
+"""
+description: extracts image annotation data to add to COCO dataset
+input:
+    img_id - image id (COCO format)
+    bbx_id - bounding box id (COCO format)
+    bbx - bounding box data from the original json file
+output:
+    dict - the final bounding box data to add to the COCO format dataset
+"""
 def GetAnnoDataToAdd(img_id:int,bbx_id:int,bbx:dict):
     class_num = CONE_CLASS_LABEL[bbx[CLASS_TITLE]]
     points = bbx[POINTS][EXT]
@@ -61,6 +78,13 @@ def GetAnnoDataToAdd(img_id:int,bbx_id:int,bbx:dict):
             "id": bbx_id
         }
 
+"""
+description: creates the dataset directories and a dict
+input:
+output:
+    dict - dict that contains phases as keys and the
+    basic json format for the COCO dataset
+"""
 def GetPhaseJsonDict():
     phases_json_data = {}
     #load base data for json files
@@ -73,5 +97,12 @@ def GetPhaseJsonDict():
     CreateDirectories(dirs_to_create)
     return phases_json_data
 
+"""
+description: builds the final and full phase json file path
+input:
+    phase - the phase
+output:
+    string - full json file path
+"""
 def GetFullDstJson(phase:str):
     return DST_ANNO_PATH+phase+".json"
