@@ -4,6 +4,7 @@ retinanet_dataset/
 detr_dataset/
 __pycache__/
 
+*.pt
 .nfs*
 *.ipynb
 *.pyc

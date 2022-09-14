@@ -116,7 +116,7 @@ output:
 	int - height of image
 	int - width of image
 """
-def GetImgWHFromJson(json_data:dict):
+def GetImgHWFromJson(json_data:dict):
     return json_data[SIZE][HEIGHT], json_data[SIZE][WIDTH]
 
 """
