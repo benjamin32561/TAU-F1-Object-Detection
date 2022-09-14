@@ -35,7 +35,7 @@ output:
 """
 def GetImageDataToAdd(img_json_data:dict,short_filename:str,img_id:int):
     #extract image data from json
-    img_h, img_w = GetImgWHFromJson(img_json_data)
+    img_h, img_w = GetImgHWFromJson(img_json_data)
     #all string are COCO consts and appear only here
     return {
             "license": 1,
