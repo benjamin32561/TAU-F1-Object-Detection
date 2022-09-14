@@ -20,17 +20,3 @@ where x_center y_center width height are all normalized (0-1) and class is an in
 
 small dataset example:
 https://www.kaggle.com/datasets/ultralytics/coco128
-
-RetinaNet
-CSV format
-train.csv
-test.csv
-val.csv
-filename,class,xmin,ymin,xmax,ymax,labels
-class - class name (Small orange for example)
-xmin,ymin,xmax,ymax - coordinates, not normalized
-labels - class number, starts from 1, 0 is saved for background
-
-DETR
-COCO format (same as YOLOv5?)
-

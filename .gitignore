@@ -1,2 +1,4 @@
 dataset/
 yolov5_dataset/
+retinanet_dataset/
+detr_dataset/
