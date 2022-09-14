@@ -1,0 +1,10 @@
+DETR
+COCO format
+dataset_folder/
+	annotations/
+	train/
+	val/
+	test/
+annotations folder contains 3 .json file (train.json, val.json, val.json) each file contains annotations
+about the coresponding folder
+train, val and test folders contains images
