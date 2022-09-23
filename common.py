@@ -1,13 +1,14 @@
 import json
 import os
 import shutil
-from glob import glob
 import random
 import copy
+from glob import glob
+from loguru import logger
 
 #constants
 #tvt split
-PHASES = {"train":0.75,"val":0.15,"test":0.1}
+DATASET_SPLIT_RATIO = {"train":0.75,"val":0.15,"test":0.1}
 
 #source path consts
 SRC_PATH = "../dataset/"
@@ -85,8 +86,8 @@ output:
 """
 def GetCurrentPhase(nof:int,i:int):
     per_sum = 0
-    for phase in PHASES.keys():
-        per_sum+=PHASES[phase]
+    for phase in DATASET_SPLIT_RATIO.keys():
+        per_sum+=DATASET_SPLIT_RATIO[phase]
         if i <= per_sum*nof:
             return phase
 
@@ -109,7 +110,7 @@ def CopyImage(src_folder:str,dst_folder:str,original_filename:str):
     return short_filename
 
 """
-desription: gets image width and height
+desription: gets image height and width
 input:
 	json_data - json data of original dataset
 output:

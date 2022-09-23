@@ -1,1 +1,0 @@
-python main.py --coco_path full_path_to_root_of_dataset

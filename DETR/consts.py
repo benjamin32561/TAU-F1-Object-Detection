@@ -26,7 +26,8 @@ ANNO = "annotations"
 
 
 """
-description: extracts image data to add to COCO dataset
+description: extracts image data from given json data to add to COCO dataset
+            (view dataset_format.txt for more information)
 input:
     img_json_data - image json data (from original file)
     short_filename - image file name without extention
@@ -41,16 +42,17 @@ def GetImageDataToAdd(img_json_data:dict,short_filename:str,img_id:int):
     return {
             "license": 1,
             "file_name": short_filename+IMG_EXTEN,
-            "coco_url": "",
+            "coco_url": "", #irrelevent
             "height": img_h,
             "width": img_w,
-            "date_captured": "",
-            "flickr_url": "",
+            "date_captured": "", #irrelevent
+            "flickr_url": "", #irrelevent
             "id": img_id
         }
 
 """
-description: extracts image annotation data to add to COCO dataset
+description: extracts image annotation (bounding boxs) data from given json data 
+            to add to COCO dataset (view dataset_format.txt for more information)
 input:
     img_id - image id (COCO format)
     bbx_id - bounding box id (COCO format)
@@ -81,6 +83,7 @@ def GetAnnoDataToAdd(img_id:int,bbx_id:int,bbx:dict):
 
 """
 description: creates the dataset directories and a dict
+            (view dataset_format.txt for more information about the directories)
 input:
 output:
     dict - dict that contains phases as keys and the
@@ -92,7 +95,7 @@ def GetPhaseJsonDict():
     base_json_object = GetDataFromJson(BASE_JSON_PATH)
     #create directories
     dirs_to_create = [DST_ANNO_PATH]
-    for phase in PHASES.keys(): #creating destination folders to save images
+    for phase in DATASET_SPLIT_RATIO.keys(): #creating destination folders to save images
         dirs_to_create.append(DST_PATH+phase)
         phases_json_data[phase]=copy.deepcopy(base_json_object) #setting base json data of each file
     CreateDirectories(dirs_to_create)

@@ -12,7 +12,7 @@ def main():
     n_folder = 1
 
     for src_sub_path in folders: #iterating through sub folders
-        print("{0}/{1} folders".format(n_folder,n_folders))
+        logger.info("{0}/{1} folders".format(n_folder,n_folders))
         n_folder+=1
 
         #image and lable sorce folders
@@ -26,7 +26,7 @@ def main():
         for img_idx, original_filename in enumerate(files): #iterating through images in sub folder
             #print progress
             if img_idx%ten_per==0:
-                print("{0}/{1}".format(img_idx,nof))
+                logger.info("{0}/{1}".format(img_idx,nof))
 
             #get current phase in split
             phase = GetCurrentPhase(nof, img_idx)
