@@ -1,18 +1,10 @@
 import sys
 import os
 sys.path.append(os.path.abspath('../'))
+from model_consts import CONE_CLASS_LABEL
 from common import *
 
 #different for each model
-#cone class-label dict
-CONE_CLASS_LABEL = {
-    "blue_cone":0,
-    "yellow_cone":1,
-    "orange_cone":2,
-    "large_orange_cone":3,
-    "other_cone":4
-}
-
 #destination folder
 DST_PATH = "../yolov5_dataset/"
 
