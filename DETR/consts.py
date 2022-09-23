@@ -1,18 +1,10 @@
 import sys
 import os
+from model_consts import CONE_CLASS_LABEL
 sys.path.append(os.path.abspath('../'))
 from common import *
 
 #different for each model
-#cone class-label dict
-CONE_CLASS_LABEL = {
-    "blue_cone":1,
-    "yellow_cone":2,
-    "orange_cone":3,
-    "large_orange_cone":4,
-    "other_cone":5
-}
-
 #destination folder
 DST_PATH = "../detr_dataset/"
 DST_ANNO_PATH = DST_PATH+"annotations/" #annotations/ folder is COCO convention
