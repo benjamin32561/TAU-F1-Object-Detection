@@ -17,7 +17,8 @@ CONE_CLASS_LABEL = {
 DST_PATH = "../yolov5_dataset/"
 
 """
-description: creates a line representing a bounding box in the specified format
+description: creates a line representing a bounding box in
+            the specified YOLOv5 format (view dataset_format.txt for more information)
 input:
     bbx - bounding box json data from original json file
     h - image height
@@ -25,7 +26,7 @@ input:
 output:
     str - the final line to add to the .txt file
 """
-def CreateBoundingBoxLine(bbx:dict, h:int, w:int):
+def CreateBoundingBoxLineByYOLOFormat(bbx:dict, h:int, w:int):
     class_num = str(CONE_CLASS_LABEL[bbx[CLASS_TITLE]])
     points = bbx[POINTS][EXT]
     x1,y1 = points[0][0],points[0][1]

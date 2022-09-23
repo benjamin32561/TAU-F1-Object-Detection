@@ -46,7 +46,7 @@ def main():
             #creating a list of lines to write to the text file
             all_lines = []
             for bbx in img_json_data[OBJECTS]:
-                line = CreateBoundingBoxLine(bbx, img_h, img_w)
+                line = CreateBoundingBoxLineByYOLOFormat(bbx, img_h, img_w)
                 all_lines.append(line)
 
             #save labels to text file
