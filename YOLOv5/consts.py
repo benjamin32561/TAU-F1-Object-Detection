@@ -1,7 +1,7 @@
 import sys
 import os
-sys.path.append(os.path.abspath('../'))
 from model_consts import CONE_CLASS_LABEL
+sys.path.append(os.path.abspath('../'))
 from common import *
 
 #different for each model
