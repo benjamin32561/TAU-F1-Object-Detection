@@ -2,7 +2,7 @@ from consts import *
 
 def main():
     #creating dataset folders
-    for phase in PHASES.keys():
+    for phase in DATASET_SPLIT_RATIO.keys():
         os.makedirs(DST_PATH+phase+'/'+IMAGE_SUB_FOLDER, exist_ok=True)
         os.makedirs(DST_PATH+phase+'/'+LABELS_SUB_FOLDER, exist_ok=True)
 
