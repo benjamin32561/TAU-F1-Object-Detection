@@ -1,12 +1,9 @@
 import sys
 import os
-from model_consts import CONE_CLASS_LABEL
 sys.path.append(os.path.abspath('../'))
-from common import *
-
-#different for each model
-#destination folder
-DST_PATH = "../yolov5_dataset/"
+import common_consts as cc
+import common_functions as cf
+from model_consts import CONE_CLASS_LABEL
 
 """
 description: creates a line representing a bounding box in
@@ -19,8 +16,8 @@ output:
     str - the final line to add to the .txt file
 """
 def CreateBoundingBoxLineByYOLOFormat(bbx:dict, h:int, w:int):
-    class_num = str(CONE_CLASS_LABEL[bbx[CLASS_TITLE]])
-    points = bbx[POINTS][EXT]
+    class_num = str(CONE_CLASS_LABEL[bbx[cc.CLASS_TITLE]])
+    points = bbx[cc.POINTS][cc.EXT]
     x1,y1 = points[0][0],points[0][1]
     x2,y2 = points[1][0],points[1][1]
     bb_width = x2-x1
