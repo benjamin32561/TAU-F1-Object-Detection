@@ -3,15 +3,17 @@ import common_consts as cc
 import common_functions as cf
 from dataset_consts import DST_PATH
 from loguru import logger
+from common_consts import IMAGE_SUB_FOLDER, LABELS_SUB_FOLDER, \
+                        SRC_PATH, DATASET_SPLIT_RATIO, OBJECTS
 
 def main():
     #creating dataset folders
-    for phase in cc.DATASET_SPLIT_RATIO.keys():
-        df.os.makedirs(DST_PATH+phase+'/'+cc.IMAGE_SUB_FOLDER, exist_ok=True)
-        df.os.makedirs(DST_PATH+phase+'/'+cc.LABELS_SUB_FOLDER, exist_ok=True)
+    for phase in DATASET_SPLIT_RATIO.keys():
+        df.os.makedirs(DST_PATH+phase+'/'+IMAGE_SUB_FOLDER, exist_ok=True)
+        df.os.makedirs(DST_PATH+phase+'/'+LABELS_SUB_FOLDER, exist_ok=True)
 
     #getting sub folder data
-    folders, n_folders = cf.GetSubFolders(cc.SRC_PATH)
+    folders, n_folders = cf.GetSubFolders(SRC_PATH)
     n_folder = 1
 
     for src_sub_path in folders: #iterating through sub folders
@@ -19,8 +21,8 @@ def main():
         n_folder+=1
 
         #image and lable sorce folders
-        src_images = src_sub_path+cc.IMAGE_SUB_FOLDER
-        src_labels = src_sub_path+cc.LABELS_SUB_FOLDER
+        src_images = src_sub_path+IMAGE_SUB_FOLDER
+        src_labels = src_sub_path+LABELS_SUB_FOLDER
 
         #loading image list and shuffeling it for random split
         files, nof = cf.GetFilesInDir(src_images)
@@ -33,8 +35,8 @@ def main():
 
             #get current phase in split
             phase = cf.GetCurrentPhase(nof, img_idx)
-            dst_images = df.os.path.join(DST_PATH+phase,cc.IMAGE_SUB_FOLDER)
-            dst_labels = df.os.path.join(DST_PATH+phase,cc.LABELS_SUB_FOLDER)
+            dst_images = df.os.path.join(DST_PATH+phase,IMAGE_SUB_FOLDER)
+            dst_labels = df.os.path.join(DST_PATH+phase,LABELS_SUB_FOLDER)
 
             #save image in new location with correct format
             filename = cf.CopyImage(src_images, dst_images, original_filename)
@@ -49,7 +51,7 @@ def main():
             #extracting bounding box data from json file
             #creating a list of lines to write to the text file
             all_lines = []
-            for bbx in img_json_data[cc.OBJECTS]:
+            for bbx in img_json_data[OBJECTS]:
                 line = df.CreateBoundingBoxLineByYOLOFormat(bbx, img_h, img_w)
                 all_lines.append(line)
 
