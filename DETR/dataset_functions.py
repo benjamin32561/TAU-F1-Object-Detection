@@ -1,21 +1,10 @@
 import sys
 import os
-from model_consts import CONE_CLASS_LABEL
 sys.path.append(os.path.abspath('../'))
-from common import *
-
-#different for each model
-#destination folder
-DST_PATH = "../detr_dataset/"
-DST_ANNO_PATH = DST_PATH+"annotations/" #annotations/ folder is COCO convention
-
-#each final .json file hase common build, can be found in this file
-BASE_JSON_PATH = "base_json.json" #path to basic json path
-
-#destination json consts, COCO format
-IMAGES = "images"
-ANNO = "annotations"
-
+import common_consts as cc
+import common_functions as cf
+import dataset_consts as dc
+from model_consts import CONE_CLASS_LABEL
 
 """
 description: extracts image data from given json data to add to COCO dataset
@@ -29,11 +18,11 @@ output:
 """
 def GetImageDataToAdd(img_json_data:dict,short_filename:str,img_id:int):
     #extract image data from json
-    img_h, img_w = GetImgHWFromJson(img_json_data)
+    img_h, img_w = cf.GetImgHWFromJson(img_json_data)
     #all string are COCO consts and appear only here
     return {
             "license": 1,
-            "file_name": short_filename+IMG_EXTEN,
+            "file_name": short_filename+cc.IMG_EXTEN,
             "coco_url": "", #irrelevent
             "height": img_h,
             "width": img_w,
@@ -53,8 +42,8 @@ output:
     dict - the final bounding box data to add to the COCO format dataset
 """
 def GetAnnoDataToAdd(img_id:int,bbx_id:int,bbx:dict):
-    class_num = CONE_CLASS_LABEL[bbx[CLASS_TITLE]]
-    points = bbx[POINTS][EXT]
+    class_num = CONE_CLASS_LABEL[bbx[cc.CLASS_TITLE]]
+    points = bbx[cc.POINTS][cc.EXT]
     x1,y1 = points[0][0],points[0][1]
     x2,y2 = points[1][0],points[1][1]
     bb_width = x2-x1
@@ -84,13 +73,13 @@ output:
 def GetPhaseJsonDict():
     phases_json_data = {}
     #load base data for json files
-    base_json_object = GetDataFromJson(BASE_JSON_PATH)
+    base_json_object = cf.GetDataFromJson(dc.BASE_JSON_PATH)
     #create directories
-    dirs_to_create = [DST_ANNO_PATH]
-    for phase in DATASET_SPLIT_RATIO.keys(): #creating destination folders to save images
-        dirs_to_create.append(DST_PATH+phase)
-        phases_json_data[phase]=copy.deepcopy(base_json_object) #setting base json data of each file
-    CreateDirectories(dirs_to_create)
+    dirs_to_create = [dc.DST_ANNO_PATH]
+    for phase in cc.DATASET_SPLIT_RATIO.keys(): #creating destination folders to save images
+        dirs_to_create.append(dc.DST_PATH+phase)
+        phases_json_data[phase]=cf.copy.deepcopy(base_json_object) #setting base json data of each file
+    cf.CreateDirectories(dirs_to_create)
     return phases_json_data
 
 """
@@ -101,4 +90,4 @@ output:
     string - full json file path
 """
 def GetFullDstJson(phase:str):
-    return DST_ANNO_PATH+phase+".json"
+    return dc.DST_ANNO_PATH+phase+".json"
