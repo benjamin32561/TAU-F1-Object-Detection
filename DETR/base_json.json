@@ -1,0 +1,46 @@
+{
+    "info": {
+        "description": "TAU Formula Student",
+        "url": "https://github.com/fsoco/fsoco-dataset",
+        "version": "1.0",
+        "year": 2022,
+        "contributor": "FSOCO Contributions",
+        "date_created": "2022/13/09"
+    },
+    "licenses": [
+        {
+            "url": "https://www.fsoco-dataset.com",
+            "id": 1,
+            "name": "Formula Student License"
+        }
+    ],
+    "images": [],
+    "annotations": [],
+    "categories": [
+        {
+            "supercategory": "cone",
+            "id": 1,
+            "name": "blue_cone"
+        },
+        {
+            "supercategory": "cone",
+            "id": 2,
+            "name": "yellow_cone"
+        },
+        {
+            "supercategory": "cone",
+            "id": 3,
+            "name": "orange_cone"
+        },
+        {
+            "supercategory": "cone",
+            "id": 4,
+            "name": "large_orange_cone"
+        },
+        {
+            "supercategory": "cone",
+            "id": 5,
+            "name": "other_cone"
+        }
+    ]
+}
