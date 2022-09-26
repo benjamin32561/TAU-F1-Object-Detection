@@ -4,7 +4,7 @@ import shutil
 import random
 import copy
 from glob import glob
-from common_consts import DATASET_SPLIT_RATIO, IMG_EXTEN, SIZE, WIDTH, HEIGHT
+from .consts import DATASET_SPLIT_RATIO, IMG_EXTEN, SIZE, WIDTH, HEIGHT
 
 """
 desription: creates all directories that the list contains

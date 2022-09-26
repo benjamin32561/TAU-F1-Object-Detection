@@ -1,8 +1,8 @@
 import dataset_functions as df
-import common_functions as cf
+import common.functions as cf
 from loguru import logger
 from dataset_consts import DST_PATH, IMAGES, ANNO
-from common_consts import IMAGE_SUB_FOLDER, LABELS_SUB_FOLDER, \
+from common.consts import IMAGE_SUB_FOLDER, LABELS_SUB_FOLDER, \
                         SRC_PATH, DATASET_SPLIT_RATIO, OBJECTS
 
 def main():

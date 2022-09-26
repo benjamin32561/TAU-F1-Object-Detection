@@ -1,8 +1,8 @@
 import sys
 import os
 sys.path.append(os.path.abspath('../'))
-import common_consts as cc
-import common_functions as cf
+import common.consts as cc
+import common.functions as cf
 from model_consts import CONE_CLASS_LABEL
 
 """
