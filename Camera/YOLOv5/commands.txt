@@ -1,3 +1,5 @@
+https://github.com/ultralytics/yolov5/wiki/Train-Custom-Data
+
 run 'pip install wandb' to automatically track and visualize YOLOv5  runs in Weights & Biases
 
 without changing model architecture:
