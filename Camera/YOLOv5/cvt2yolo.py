@@ -2,14 +2,17 @@ import dataset_functions as df
 import common.functions as cf
 from dataset_consts import DST_PATH
 from loguru import logger
+from dataset_consts import DST_IMAGES_SUB_FOLDER, DST_LABELS_SUB_FOLDER
 from common.consts import IMAGE_SUB_FOLDER, LABELS_SUB_FOLDER, \
                         SRC_PATH, DATASET_SPLIT_RATIO, OBJECTS
 
 def main():
     #creating dataset folders
+    folders_to_create = []
     for phase in DATASET_SPLIT_RATIO.keys():
-        df.os.makedirs(DST_PATH+phase+'/'+IMAGE_SUB_FOLDER, exist_ok=True)
-        df.os.makedirs(DST_PATH+phase+'/'+LABELS_SUB_FOLDER, exist_ok=True)
+        folders_to_create.append(DST_PATH+DST_IMAGES_SUB_FOLDER+'/'+phase)
+        folders_to_create.append(DST_PATH+DST_LABELS_SUB_FOLDER+'/'+phase)
+    cf.CreateDirectories(folders_to_create)
 
     #getting sub folder data
     folders, n_folders = cf.GetSubFolders(SRC_PATH)
@@ -34,8 +37,8 @@ def main():
 
             #get current phase in split
             phase = cf.GetCurrentPhase(nof, img_idx)
-            dst_images = df.os.path.join(DST_PATH+phase,IMAGE_SUB_FOLDER)
-            dst_labels = df.os.path.join(DST_PATH+phase,LABELS_SUB_FOLDER)
+            dst_images = df.os.path.join(DST_PATH+DST_IMAGES_SUB_FOLDER,phase)
+            dst_labels = df.os.path.join(DST_PATH+DST_LABELS_SUB_FOLDER,phase)
 
             #save image in new location with correct format
             filename = cf.CopyImage(src_images, dst_images, original_filename)
