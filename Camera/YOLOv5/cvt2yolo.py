@@ -3,7 +3,7 @@ import common.functions as cf
 from dataset_consts import DST_PATH
 from loguru import logger
 from dataset_consts import DST_IMAGES_SUB_FOLDER, DST_LABELS_SUB_FOLDER
-from common.consts import IMAGE_SUB_FOLDER, LABELS_SUB_FOLDER, \
+from common.consts import IMAGES_SUB_FOLDER, LABELS_SUB_FOLDER, \
                         SRC_PATH, DATASET_SPLIT_RATIO, OBJECTS
 
 def main():
@@ -23,7 +23,7 @@ def main():
         n_folder+=1
 
         #image and lable sorce folders
-        src_images = src_sub_path+IMAGE_SUB_FOLDER
+        src_images = src_sub_path+IMAGES_SUB_FOLDER
         src_labels = src_sub_path+LABELS_SUB_FOLDER
 
         #loading image list and shuffeling it for random split
