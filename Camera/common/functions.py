@@ -80,12 +80,15 @@ input:
 output:
 	string - the file name without the extention
 """
-def CopyImage(src_folder:str,dst_folder:str,original_filename:str):
+def CopyImage(src_folder:str,dst_folder:str,original_filename:str,move=True:bool):
     #save image in new location with correct format
     f = os.path.join(src_folder, original_filename)
     short_filename = original_filename[:-4]
     new_f = os.path.join(dst_folder, short_filename+IMG_EXTEN)
-    shutil.copyfile(f, new_f)
+    if move:
+    	shutil.move(f, new_f)
+    else:
+    	shutil.copyfile(f, new_f)
     return short_filename
 
 """
