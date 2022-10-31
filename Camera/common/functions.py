@@ -4,7 +4,7 @@ import shutil
 import random
 import copy
 from glob import glob
-from .consts import DATASET_SPLIT_RATIO, IMG_EXTEN, SIZE, WIDTH, HEIGHT
+from .consts import DATASET_SPLIT_RATIO, IMG_EXTEN, SIZE, WIDTH, HEIGHT, MOVE_IMAGES
 
 """
 desription: creates all directories that the list contains
@@ -80,12 +80,12 @@ input:
 output:
 	string - the file name without the extention
 """
-def CopyImage(src_folder:str,dst_folder:str,original_filename:str,move=True):
+def CopyImage(src_folder:str,dst_folder:str,original_filename:str):
     #save image in new location with correct format
     f = os.path.join(src_folder, original_filename)
     short_filename = original_filename[:-4]
     new_f = os.path.join(dst_folder, short_filename+IMG_EXTEN)
-    if move:
+    if MOVE_IMAGES:
     	shutil.move(f, new_f)
     else:
     	shutil.copyfile(f, new_f)

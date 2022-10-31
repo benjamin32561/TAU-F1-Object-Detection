@@ -16,3 +16,5 @@ WIDTH = "width"
 HEIGHT = "height"
 
 IMG_EXTEN = ".jpg"
+
+MOVE_IMAGES = False
