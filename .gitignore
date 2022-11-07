@@ -6,7 +6,6 @@ __pycache__/
 
 *.pt
 .nfs*
-*.ipynb
 *.pyc
 .dumbo.json
 .DS_Store
