@@ -14,8 +14,6 @@ def main():
 
     #getting sub folder data
     folders, n_folders = cf.GetSubFolders(SRC_PATH)
-    print(SRC_PATH)
-    print(folders)
     n_folder = 1
 
     for src_sub_path in folders: #iterating through sub folders
