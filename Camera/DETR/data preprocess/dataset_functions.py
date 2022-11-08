@@ -1,6 +1,6 @@
 import sys
 import os
-sys.path.append(os.path.abspath('../'))
+sys.path.append(os.path.abspath('../../'))
 import common.consts as cc
 import common.functions as cf
 import dataset_consts as dc
