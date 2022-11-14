@@ -4,5 +4,5 @@ CONE_CLASS_LABEL = {
     "yellow_cone":2,
     "orange_cone":3,
     "large_orange_cone":4,
-    "other_cone":5
+    "unknown_cone":5
 }
