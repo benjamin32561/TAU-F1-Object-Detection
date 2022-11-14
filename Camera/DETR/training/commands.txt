@@ -1,6 +1,0 @@
-https://github.com/facebookresearch/detr
-
-python main.py --coco_path full_path_to_root_of_dataset
-
-for ben:
-python main.py --coco_path C:\Users\ben32\Desktop\TAU-F1-Object-Detection\Camera\detr_dataset
