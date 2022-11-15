@@ -77,7 +77,7 @@ def GetPhaseJsonDict():
     #create directories
     dirs_to_create = [dc.DST_ANNO_PATH]
     for phase in cc.DATASET_SPLIT_RATIO.keys(): #creating destination folders to save images
-        dirs_to_create.append(dc.DST_PATH+phase)
+        dirs_to_create.append(dc.DST_PATH+phase+dc.COCO_ENDING)
         phases_json_data[phase]=cf.copy.deepcopy(base_json_object) #setting base json data of each file
     cf.CreateDirectories(dirs_to_create)
     return phases_json_data
@@ -90,4 +90,4 @@ output:
     string - full json file path
 """
 def GetFullDstJson(phase:str):
-    return dc.DST_ANNO_PATH+phase+".json"
+    return dc.DST_ANNO_PATH+dc.COCO_JSON_START+phase+dc.COCO_ENDING+".json"
