@@ -1,7 +1,7 @@
 import dataset_functions as df
 import common.functions as cf
 from loguru import logger
-from dataset_consts import DST_PATH, IMAGES, ANNO, COCO_ENDING
+from dataset_consts import IMAGES, ANNO, COCO_ENDING, IMAGES_DST_PATH
 from common.consts import IMAGES_SUB_FOLDER, LABELS_SUB_FOLDER, \
                         SRC_PATH, DATASET_SPLIT_RATIO, OBJECTS
 
@@ -35,7 +35,7 @@ def main():
 
             #get current phase in split
             phase = cf.GetCurrentPhase(nof, img_idx)
-            dst_images = DST_PATH+phase+COCO_ENDING
+            dst_images = IMAGES_DST_PATH+phase+COCO_ENDING
 
             #save image in new location with correct format
             filename = cf.CopyImage(src_images, dst_images, original_filename)
