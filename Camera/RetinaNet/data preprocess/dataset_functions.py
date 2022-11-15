@@ -90,4 +90,4 @@ output:
     string - full json file path
 """
 def GetFullDstJson(phase:str):
-    return dc.DST_ANNO_PATH+phase+".json"
+    return dc.DST_ANNO_PATH+"instances_"+phase+"2017.json"
