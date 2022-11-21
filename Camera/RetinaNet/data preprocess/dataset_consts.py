@@ -1,5 +1,5 @@
 #destination folder
-DST_PATH = "../retinanet_dataset/"
+DST_PATH = "../../retinanet_dataset/"
 DST_ANNO_PATH = DST_PATH+"annotations/" #annotations/ folder is COCO convention
 IMAGES_DST_PATH = DST_PATH+"images/"
 COCO_ENDING = "2017"
