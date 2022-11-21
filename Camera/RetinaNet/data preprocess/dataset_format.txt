@@ -1,0 +1,11 @@
+RetinaNet
+COCO format
+dataset_folder/
+	annotations/
+	images/
+		train2017/
+		val2017/
+		test207/
+annotations folder contains 3 .json file (instances_train2017.json, instances_val2017.json, instances_test2017.json)
+each file contains annotations about the coresponding folder
+train, val and test folders contains images

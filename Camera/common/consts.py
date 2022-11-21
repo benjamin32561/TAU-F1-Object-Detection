@@ -2,7 +2,7 @@
 DATASET_SPLIT_RATIO = {"train":0.75,"val":0.15,"test":0.1}
 
 #source path consts
-SRC_PATH = "../../dataset/"
+SRC_PATH = "/content/dataset/"
 IMAGES_SUB_FOLDER = "img"
 LABELS_SUB_FOLDER = "ann"
 
@@ -17,4 +17,4 @@ HEIGHT = "height"
 
 IMG_EXTEN = ".jpg"
 
-MOVE_IMAGES = False
+MOVE_IMAGES = True
