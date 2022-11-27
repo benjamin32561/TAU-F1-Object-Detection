@@ -17,4 +17,6 @@ HEIGHT = "height"
 
 IMG_EXTEN = ".jpg"
 
-MOVE_IMAGES = True
+MOVE_IMAGES = False
+
+BOUNDING_BOX_AREA_THRESH = 0.0

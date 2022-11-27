@@ -4,7 +4,7 @@ from dataset_consts import DST_PATH
 from loguru import logger
 from dataset_consts import DST_IMAGES_SUB_FOLDER, DST_LABELS_SUB_FOLDER
 from common.consts import IMAGES_SUB_FOLDER, LABELS_SUB_FOLDER, \
-                        SRC_PATH, DATASET_SPLIT_RATIO, OBJECTS
+                        SRC_PATH, DATASET_SPLIT_RATIO, OBJECTS, BOUNDING_BOX_AREA_THRESH
 
 def main():
     #creating dataset folders
@@ -49,14 +49,17 @@ def main():
 
             #extract image data from json
             img_h, img_w = cf.GetImgHWFromJson(img_json_data)
+            img_size = img_h*img_w
 
             #extracting bounding box data from json file
             #creating a list of lines to write to the text file
             all_lines = []
             for bbx in img_json_data[OBJECTS]:
-                line = df.CreateBoundingBoxLineByYOLOFormat(bbx, img_h, img_w)
-                all_lines.append(line)
-
+                size = cf.GetBbxArea(bbx)
+                area_ratio = size/img_size
+                if area_ratio>=BOUNDING_BOX_AREA_THRESH:
+                    line = df.CreateBoundingBoxLineByYOLOFormat(bbx, img_h, img_w)
+                    all_lines.append(line)
             #save labels to text file
             text_f = df.os.path.join(dst_labels, filename+".txt")
             with open(text_f,"w+") as text_file:

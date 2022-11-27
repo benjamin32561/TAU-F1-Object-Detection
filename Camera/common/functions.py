@@ -4,7 +4,8 @@ import shutil
 import random
 import copy
 from glob import glob
-from .consts import DATASET_SPLIT_RATIO, IMG_EXTEN, SIZE, WIDTH, HEIGHT, MOVE_IMAGES
+from .consts import DATASET_SPLIT_RATIO, IMG_EXTEN, SIZE, WIDTH, HEIGHT, MOVE_IMAGES, \
+                    POINTS, EXT
 
 """
 desription: creates all directories that the list contains
@@ -114,3 +115,16 @@ def WriteJsonFiles(path_and_data:dict):
     for key,val in path_and_data.items():
         with open(key,'w+') as json_file:
             json.dump(val,json_file,indent=4)
+
+"""
+desription: return area of given bounding box, bounding box variable format is same as original dataset
+input:
+	bbx - the bounding box data
+output: float, the area of the givan bounding box
+"""
+def GetBbxArea(bbx):
+    start_end = bbx[POINTS][EXT]
+    x1,y1 = start_end[0][0],start_end[0][1]
+    x2,y2 = start_end[1][0],start_end[1][1]
+    delta_x, delta_y = x2-x1, y2-y1
+    return delta_x*delta_y
