@@ -82,7 +82,7 @@ class CocoDataset(Dataset):
 
     def load_annotations(self, image_index):
         # get ground truth annotations
-        annotations_ids = self.coco.getAnnIds(imgIds=self.image_ids[image_index], iscrowd=False)
+        annotations_ids = self.coco.getAnnIds(imgIds=self.image_ids[image_index])
         annotations     = np.zeros((0, 5))
 
         # some images appear to miss annotations (like image with id 257034)
