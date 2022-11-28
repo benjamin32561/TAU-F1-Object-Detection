@@ -1,4 +1,4 @@
-## TAU-F!-Object-Detection
+## TAU-F1-Object-Detection
 
 This is a repository for the TAU-F!-Object-Detection project.
 
