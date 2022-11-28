@@ -30,7 +30,6 @@ def main(args=None):
 
     # Create the data loaders
 
-    print(parser.coco_path)
     if parser.coco_path is None:
         raise ValueError('Must provide --coco_path when training on COCO,')
 
@@ -47,7 +46,9 @@ def main(args=None):
         dataloader_val = DataLoader(dataset_val, num_workers=parser.num_workers, collate_fn=collater, batch_sampler=sampler_val)
 
     # Create the model
-    if parser.depth == 18:
+    if parser.model_path is not None:
+        retinanet = torch.load(parser.model_path)
+    elif parser.depth == 18:
         retinanet = model.resnet18(num_classes=dataset_train.num_classes(), pretrained=True)
     elif parser.depth == 34:
         retinanet = model.resnet34(num_classes=dataset_train.num_classes(), pretrained=True)
