@@ -105,6 +105,7 @@ def main(args=None):
                 print('\rEpoch: {} | Iteration: {}/{} | Classification loss: {:1.5f} | Regression loss: {:1.5f} | Running loss: {:1.5f}'
                     .format(epoch_num,iter_num,n_iterations,float(classification_loss),float(regression_loss),np.mean(loss_hist)), end='')
 
+                del img_data
                 del classification_loss
                 del regression_loss
             except Exception as e:
