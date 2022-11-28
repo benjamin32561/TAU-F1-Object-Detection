@@ -3,6 +3,7 @@ yolov5_dataset/
 retinanet_dataset/
 detr_dataset/
 __pycache__/
+wandb/
 
 *.pt
 .nfs*

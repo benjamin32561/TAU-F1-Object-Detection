@@ -4,6 +4,7 @@ import numpy as np
 import torch
 import torch.optim as optim
 from torchvision import transforms
+import wandb
 
 from retinanet import model
 from retinanet.dataloader import CocoDataset, collater, Resizer, AspectRatioBasedSampler, Augmenter, Normalizer
@@ -18,17 +19,23 @@ def main(args=None):
     parser.add_argument('--coco_path', help='Path to COCO directory')
     parser.add_argument('--model_path', help='Path to model weights')
     parser.add_argument('--save_model_path', help='Path to save model at /path/to/model.(pth/pt)')
-    parser.add_argument('--batch_size', help='Training batch size',type=int, default=8)
-    parser.add_argument('--val_batch_size', help='Validation batch size',type=int, default=8)
+    parser.add_argument('--batch_size', help='Training batch size',type=int, default=4)
+    parser.add_argument('--val_batch_size', help='Validation batch size',type=int, default=4)
     parser.add_argument('--num_workers', help='Number of workers',type=int, default=3)
     parser.add_argument('--depth', help='Resnet depth, must be one of 18, 34, 50, 101, 152', type=int, default=50)
     parser.add_argument('--epochs', help='Number of epochs', type=int, default=100)
     parser.add_argument('--lr', help='Learning rate', type=float, default=1e-5)
     parser.add_argument('--start_from_epoch', help='Epoch to start training from (for resuming training)', type=int, default=0)
+    parser.add_argument('--wandb_run_name', help='weights and biases run name')
 
     parser = parser.parse_args(args)
 
     # Create the data loaders
+
+    wandb.init(
+            project="RetinaNet",
+            name=parser.wandb_run_name,
+            resume="allow")
 
     if parser.coco_path is None:
         raise ValueError('Must provide --coco_path when training on COCO,')
@@ -80,6 +87,8 @@ def main(args=None):
         retinanet.module.freeze_bn()
 
         epoch_loss = []
+        epoch_class_loss = []
+        epoch_reg_loss = []
         n_iterations = len(dataloader_train)
         for iter_num, data in enumerate(dataloader_train):
             try:
@@ -99,6 +108,8 @@ def main(args=None):
                 torch.nn.utils.clip_grad_norm_(retinanet.parameters(), 0.1)
                 optimizer.step()
 
+                epoch_class_loss.append(float(classification_loss))
+                epoch_reg_loss.append(float(regression_loss))
                 loss_hist.append(float(loss))
                 epoch_loss.append(float(loss))
 
@@ -111,8 +122,11 @@ def main(args=None):
             except Exception as e:
                 print(e)
                 continue
-
-        scheduler.step(np.mean(epoch_loss))
+        
+        epoch_loss = np.mean(epoch_loss)
+        epoch_class_loss = np.mean(epoch_class_loss)
+        epoch_reg_loss = np.mean(epoch_reg_loss)
+        scheduler.step(epoch_loss)
 
         print('\nEvaluating model...')
         retinanet.training = False
@@ -139,6 +153,15 @@ def main(args=None):
         regression_val_loss = np.mean(regression_val_loss)
         print('validation data: Classification loss: {:1.5f} | Regression loss: {:1.5f} | Running loss: {:1.5f}\n'.format(
                 float(class_val_loss), float(regression_val_loss), regression_val_loss+class_val_loss))
+
+        wandb.log({
+            "train_loss":epoch_loss,
+            "train_classification_loss":epoch_class_loss,
+            "train_regression_loss":epoch_reg_loss,
+            "val_loss":regression_val_loss+class_val_loss,
+            "val_classification_loss":class_val_loss,
+            "val_regression_loss":regression_val_loss},
+            step=epoch_num)
 
         torch.save(retinanet, 'retinanet_epoch{}.pt'.format(epoch_num))
 
