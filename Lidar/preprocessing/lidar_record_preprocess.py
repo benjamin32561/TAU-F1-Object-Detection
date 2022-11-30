@@ -55,7 +55,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--record_path', type=str, required=True, help='path to the lidar record')
     parser.add_argument('--num_of_frames', type=int, default=-1,help = 'number of frames to process, -1 for all frames. default is -1')
-    parser.add_argument('--format', type=str, default='pcd', choices=['bin', 'pcd', 'ply'])
+    parser.add_argument('--format', type=str, default='pcd', choices=['bin', 'pcd', 'ply'], help='output format, default is pcd')
     parser.add_argument('--save_path', type=str, default='./dataset', help='path to save the frames')
     parser.add_argument('--normalize', type=bool, default=False, help='normalize the point cloud to [0,1] range default is False')
     parser.add_argument('--x_min', type=float, default=3, help='x min value to crop point cloud default=3 meters')
