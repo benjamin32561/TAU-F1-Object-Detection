@@ -13,7 +13,9 @@ def evaluate_coco(dataset, model, threshold=0.05):
         results = []
         image_ids = []
 
-        for index in range(len(dataset)):
+        n_images = len(dataset)
+        for index in range(n_images):
+            print("\rRunning COCO evaluation, {}/{} images".format(index,n_images))
             data = dataset[index]
             scale = data['scale']
 
