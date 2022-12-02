@@ -23,21 +23,32 @@ def Validation(model,dataloader,IoU_thresh=0.5):
 
         bbx_label = annot[:,:-1]
         class_label = annot[:,-1]
+
         print(bbx_label.size())
         print(bbx_label)
         print(class_label.size())
         print(class_label)
-        scores, class_pred, bbx_pred = model(img)
 
+        scores, class_pred, bbx_preds = model(img)
+
+        print(bbx_preds.size())
+        print(bbx_preds)
         print(class_pred.size())
         print(class_pred)
-        print(bbx_pred.size())
-        print(bbx_pred)
+
+        n_objects = class_label.size()[0]
+        for predicted_bbx in bbx_preds:
+            bbx = predicted_bbx.repeat(n_objects, 1)
+            iou = calc_iou(bbx,bbx_label)
+            print(iou)
+            current_bbx_tp_idx = iou>=IoU_thresh
+            current_bbx_fp_idx = iou<IoU_thresh
+        
 
         del img
         del scores
         del class_pred
-        del bbx_pred
+        del bbx_preds
         break
 
 def main(args=None):
