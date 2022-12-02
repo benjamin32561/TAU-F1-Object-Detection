@@ -3,7 +3,7 @@ import common.functions as cf
 from loguru import logger
 from dataset_consts import IMAGES, ANNO, COCO_ENDING, IMAGES_DST_PATH
 from common.consts import IMAGES_SUB_FOLDER, LABELS_SUB_FOLDER, \
-                        SRC_PATH, DATASET_SPLIT_RATIO, OBJECTS
+                        SRC_PATH, DATASET_SPLIT_RATIO, OBJECTS, BOUNDING_BOX_AREA_THRESH
 
 def main():
     phases_json_data = df.GetPhaseJsonDict()
@@ -43,6 +43,9 @@ def main():
             #load image data json file
             json_file_path = df.os.path.join(src_labels, original_filename+".json")
             img_json_data = cf.GetDataFromJson(json_file_path)
+            
+            img_h, img_w = cf.GetImgHWFromJson(img_json_data)
+            img_size = img_h*img_w
 
             #add image to coco dataset
             phases_json_data[phase][IMAGES].append(
@@ -50,14 +53,16 @@ def main():
                 )
 
             #extracting data from json file
-            for bounding_box in img_json_data[OBJECTS]:
-                #add bounding box to json data
-                phases_json_data[phase][ANNO].append(
-                        df.GetAnnoDataToAdd(img_id,bbx_id,bounding_box)
-                    )
-                bbx_id+=1
+            for bbx in img_json_data[OBJECTS]:
+                size = cf.GetBbxArea(bbx)
+                area_ratio = size/img_size
+                if area_ratio>=BOUNDING_BOX_AREA_THRESH:
+                    #add bounding box to json data
+                    phases_json_data[phase][ANNO].append(
+                            df.GetAnnoDataToAdd(img_id,bbx_id,bbx)
+                        )
+                    bbx_id+=1
             img_id+=1
-
     #build final dict where key is full .json 
     #file name and value is final json data
     final_dict = {}

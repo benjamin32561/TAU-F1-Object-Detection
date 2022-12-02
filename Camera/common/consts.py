@@ -1,5 +1,5 @@
 #tvt split
-DATASET_SPLIT_RATIO = {"train":0.75,"val":0.15,"test":0.1}
+DATASET_SPLIT_RATIO = {"train":0.8,"val":0.2}
 
 #source path consts
 SRC_PATH = "/content/dataset/"
@@ -19,4 +19,4 @@ IMG_EXTEN = ".jpg"
 
 MOVE_IMAGES = True
 
-BOUNDING_BOX_AREA_THRESH = 0.0 #0.00002
+BOUNDING_BOX_AREA_THRESH = 0.0001 #0.00002
