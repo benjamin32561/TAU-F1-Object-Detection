@@ -235,10 +235,11 @@ class ResNet(nn.Module):
         else:
             img_batch = inputs
 
-        x = self.conv1(img_batch)
         print("good")
-        x = self.bn1(x)
+        x = self.conv1(img_batch)
         print("good1")
+        x = self.bn1(x)
+        print("good2")
         x = self.relu(x)
         x = self.maxpool(x)
 
