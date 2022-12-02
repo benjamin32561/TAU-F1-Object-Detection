@@ -11,7 +11,6 @@ from os.path import join, exists
 from retinanet import model
 from retinanet.dataloader import CocoDataset, collater, Resizer, AspectRatioBasedSampler, Augmenter, Normalizer
 from torch.utils.data import DataLoader
-from retinanet import coco_eval
 
 assert torch.__version__.split('.')[0] == '1'
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -86,10 +85,10 @@ def main(args=None):
 
     print('Num training images: {}'.format(len(dataset_train)))
 
+    retinanet.training = True
+    retinanet.train()
+    retinanet.module.freeze_bn() #setting BN layers to eval()
     for epoch_num in range(parser.start_from_epoch,parser.epochs): 
-        retinanet.training = True
-        retinanet.train()
-        retinanet.module.freeze_bn() #setting BN layers to eval()
         epoch_loss = []
         epoch_class_loss = []
         epoch_reg_loss = []
