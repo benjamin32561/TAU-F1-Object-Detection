@@ -130,8 +130,8 @@ def main(args=None):
         scheduler.step(epoch_loss)
 
         print('\nEvaluating model...')
-        retinanet.training = True
-        retinanet.eval()
+        retinanet.training = False
+        retinanet.train()
         retinanet.module.freeze_bn()
         classification_val_loss = []
         regression_val_loss = []
