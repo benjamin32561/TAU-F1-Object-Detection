@@ -60,6 +60,7 @@ def evaluate_coco(dataset, model, threshold=0.05):
 
             # append image to list of processed images
             image_ids.append(dataset.image_ids[index])
+
             break
 
         if not len(results):
