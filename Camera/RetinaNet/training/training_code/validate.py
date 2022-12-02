@@ -10,6 +10,7 @@ from os.path import join, exists
 from retinanet import model
 from retinanet.dataloader import CocoDataset, collater, Resizer, AspectRatioBasedSampler, Augmenter, Normalizer
 from torch.utils.data import DataLoader
+from retinanet.losses import calc_iou
 
 assert torch.__version__.split('.')[0] == '1'
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -19,8 +20,12 @@ def Validation(model,dataloader,IoU_thresh=0.5):
     for idx, data in enumerate(dataloader):
 
         img = data['img'].to(torch.float32).to(DEVICE)
-        print(data)
+        annot = data['annot']
         scores, labels, boxes = model(img)
+
+        print(labels.size())
+        print(boxes.size())
+        print(annot.size())
 
         del img
         del scores
