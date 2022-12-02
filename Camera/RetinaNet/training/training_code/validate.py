@@ -16,10 +16,9 @@ DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 def Validation(model,dataset,IoU_thresh=0.5):
     n_images = len(dataset)
-    for idx in range(n_images):
-        sample = dataset[idx]
+    for idx, data in enumerate(dataloader_train):
 
-        img = sample['img'].to(torch.float32).to(DEVICE)
+        img = data['img'].to(torch.float32).to(DEVICE)
         print(img.size())
         scores, labels, boxes = model(img)
 
@@ -40,18 +39,19 @@ def main(args=None):
 
     dataset_val = CocoDataset(parser.coco_path, set_name='val2017',
                                 transform=transforms.Compose([Normalizer(), Resizer()]))
+    
+    sampler_val = AspectRatioBasedSampler(dataset_val, batch_size=1, drop_last=False)
+    dataloader_val = DataLoader(dataset_val, num_workers=1, collate_fn=collater, batch_sampler=sampler_val)
 
     # Create the model
     retinanet = torch.load(parser.model_path)
 
     retinanet = torch.nn.DataParallel(retinanet).to(DEVICE)
 
-    print(retinanet)
-
     retinanet.training = False
     retinanet.eval()
 
-    Validation(retinanet,dataset_val)
+    Validation(retinanet,dataloader_val)
 
 if __name__ == '__main__':
     main()
