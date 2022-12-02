@@ -79,6 +79,7 @@ def evaluate_coco(dataset, model, threshold=0.05):
         coco_eval.evaluate()
         coco_eval.accumulate()
         coco_eval.summarize()
+        print(coco_eval)
 
         model.train()
 
