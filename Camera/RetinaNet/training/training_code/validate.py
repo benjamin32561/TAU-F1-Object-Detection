@@ -18,22 +18,26 @@ DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 def Validation(model,dataloader,IoU_thresh=0.5):
     n_images = len(dataloader)
     for idx, data in enumerate(dataloader):
-
         img = data['img'].to(torch.float32).to(DEVICE)
-        annot = data['annot']
-        print(annot.size())
-        print(annot)
-        scores, labels, boxes = model(img)
+        annot = data['annot'][0]
 
-        print(labels.size())
-        print(labels)
-        print(boxes.size())
-        print(boxes)
+        bbx_label = annot[:,:-1]
+        class_label = annot[:,-1]
+        print(bbx_label.size())
+        print(bbx_label)
+        print(class_label.size())
+        print(class_label)
+        scores, class_pred, bbx_pred = model(img)
+
+        print(class_pred.size())
+        print(class_pred)
+        print(bbx_pred.size())
+        print(bbx_pred)
 
         del img
         del scores
-        del labels
-        del boxes
+        del class_pred
+        del bbx_pred
         break
 
 def main(args=None):
