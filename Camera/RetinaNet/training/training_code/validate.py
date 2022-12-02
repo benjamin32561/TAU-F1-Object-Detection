@@ -21,11 +21,14 @@ def Validation(model,dataloader,IoU_thresh=0.5):
 
         img = data['img'].to(torch.float32).to(DEVICE)
         annot = data['annot']
+        print(annot.size())
+        print(annot)
         scores, labels, boxes = model(img)
 
         print(labels.size())
+        print(labels)
         print(boxes.size())
-        print(annot.size())
+        print(boxes)
 
         del img
         del scores
