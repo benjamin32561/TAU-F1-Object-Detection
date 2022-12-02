@@ -231,14 +231,14 @@ class ResNet(nn.Module):
     def forward(self, inputs):
 
         if self.training:
-            print("training")
             img_batch, annotations = inputs
         else:
-            print("validatin")
             img_batch = inputs
 
         x = self.conv1(img_batch)
+        print("good")
         x = self.bn1(x)
+        print("good1")
         x = self.relu(x)
         x = self.maxpool(x)
 
