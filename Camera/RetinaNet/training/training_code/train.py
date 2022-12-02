@@ -132,14 +132,14 @@ def main(args=None):
         print('\nEvaluating model...')
         retinanet.training = False
         retinanet.eval()
-        #retinanet.module.freeze_bn()
+        retinanet.module.freeze_bn()
         classification_val_loss = []
         regression_val_loss = []
         for iter_num, data in enumerate(dataloader_val):
             optimizer.zero_grad()
 
             img_data = data['img'].to(torch.float32).to(DEVICE)
-            classification_loss, regression_loss = retinanet([img_data, data['annot']])
+            classification_loss, regression_loss = retinanet(img_data)
                 
             classification_loss = classification_loss.mean()
             regression_loss = regression_loss.mean()
