@@ -56,9 +56,6 @@ class CocoDataset(Dataset):
         self.labels = {}
         for key, value in self.classes.items():
             self.labels[value] = key
-        
-        print(self.coco_labels)
-        print(self.coco_labels_inverse)
 
     def __len__(self):
         return len(self.image_ids)
@@ -116,7 +113,7 @@ class CocoDataset(Dataset):
 
 
     def label_to_coco_label(self, label):
-        return self.coco_labels[label]
+        return self.coco_labels[label-1]
 
     def image_aspect_ratio(self, image_index):
         image = self.coco.loadImgs(self.image_ids[image_index])[0]
