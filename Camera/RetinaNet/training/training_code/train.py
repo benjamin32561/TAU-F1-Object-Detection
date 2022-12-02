@@ -131,7 +131,7 @@ def main(args=None):
 
         print('\nEvaluating model...')
         retinanet.training = False
-        retinanet.train(False)
+        retinanet.train()
         retinanet.module.freeze_bn()
         classification_val_loss = []
         regression_val_loss = []
