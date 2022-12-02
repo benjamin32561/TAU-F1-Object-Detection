@@ -95,9 +95,6 @@ def main(args=None):
         epoch_reg_loss = []
         n_iterations = len(dataloader_train)
         for iter_num, data in enumerate(dataloader_train):
-
-            print(data['img'].size(),data['annot'].size())
-
             optimizer.zero_grad()
             
             img_data = data['img'].to(torch.float32).to(DEVICE)
@@ -133,8 +130,8 @@ def main(args=None):
         scheduler.step(epoch_loss)
 
         print('\nEvaluating model...')
-        retinanet.training = False
-        retinanet.eval()
+        retinanet.training = True
+        retinanet.train()
         retinanet.module.freeze_bn()
         classification_val_loss = []
         regression_val_loss = []
