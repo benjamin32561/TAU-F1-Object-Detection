@@ -95,37 +95,37 @@ def main(args=None):
         epoch_reg_loss = []
         n_iterations = len(dataloader_train)
         for iter_num, data in enumerate(dataloader_train):
-            print(data)
-            try:
-                optimizer.zero_grad()
+
+            print(data['img'].size(),data['annot'].size())
+
+            optimizer.zero_grad()
+            
+            img_data = data['img'].to(torch.float32).to(DEVICE)
+            classification_loss, regression_loss = retinanet([img_data, data['annot']])
                 
-                img_data = data['img'].to(torch.float32).to(DEVICE)
-                classification_loss, regression_loss = retinanet([img_data, data['annot']])
-                    
-                classification_loss = classification_loss.mean()
-                regression_loss = regression_loss.mean()
-                loss = classification_loss + regression_loss
+            classification_loss = classification_loss.mean()
+            regression_loss = regression_loss.mean()
+            loss = classification_loss + regression_loss
 
-                if bool(loss == 0):
-                    continue
-
-                loss.backward()
-                torch.nn.utils.clip_grad_norm_(retinanet.parameters(), 0.1)
-                optimizer.step()
-
-                epoch_class_loss.append(float(classification_loss))
-                epoch_reg_loss.append(float(regression_loss))
-                epoch_loss.append(float(loss))
-
-                print('\rEpoch: {} | Iteration: {}/{} | Classification loss: {:1.5f} | Regression loss: {:1.5f} | Running loss: {:1.5f}'
-                    .format(epoch_num,iter_num,n_iterations,float(classification_loss),float(regression_loss),np.mean(epoch_loss)), end='')
-                break
-                del img_data
-                del classification_loss
-                del regression_loss
-            except Exception as e:
-                print(e)
+            if bool(loss == 0):
                 continue
+
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(retinanet.parameters(), 0.1)
+            optimizer.step()
+
+            epoch_class_loss.append(float(classification_loss))
+            epoch_reg_loss.append(float(regression_loss))
+            epoch_loss.append(float(loss))
+
+            print('\rEpoch: {} | Iteration: {}/{} | Classification loss: {:1.5f} | Regression loss: {:1.5f} | Running loss: {:1.5f}'
+                .format(epoch_num,iter_num,n_iterations,float(classification_loss),float(regression_loss),np.mean(epoch_loss)), end='')
+            
+            del img_data
+            del classification_loss
+            del regression_loss
+
+            break
         
         epoch_loss = np.mean(epoch_loss)
         epoch_class_loss = np.mean(epoch_class_loss)
@@ -140,7 +140,9 @@ def main(args=None):
         regression_val_loss = []
         for iter_num, data in enumerate(dataloader_train):
             optimizer.zero_grad()
-            print(data)
+
+            print(data['img'].size(),data['annot'].size())
+
             img_data = data['img'].to(torch.float32).to(DEVICE)
             classification_loss, regression_loss = retinanet([img_data, data['annot']])
                 
@@ -152,6 +154,8 @@ def main(args=None):
             del img_data
             del classification_loss
             del regression_loss
+
+            break
         
         class_val_loss = np.mean(classification_val_loss)
         regression_val_loss = np.mean(regression_val_loss)
