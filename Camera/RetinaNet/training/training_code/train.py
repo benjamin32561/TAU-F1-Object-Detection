@@ -132,7 +132,7 @@ def main(args=None):
         print('\nEvaluating model...')
         retinanet.training = False
         retinanet.eval()
-        retinanet.module.freeze_bn()
+        #retinanet.module.freeze_bn()
         classification_val_loss = []
         regression_val_loss = []
         for iter_num, data in enumerate(dataloader_val):

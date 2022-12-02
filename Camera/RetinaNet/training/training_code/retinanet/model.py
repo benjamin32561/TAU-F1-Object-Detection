@@ -237,7 +237,9 @@ class ResNet(nn.Module):
 
         x = self.conv1(img_batch)
         x = self.bn1(x)
+        print("good")
         x = self.relu(x)
+        print("good1")
         x = self.maxpool(x)
 
         x1 = self.layer1(x)
