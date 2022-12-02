@@ -57,8 +57,8 @@ class CocoDataset(Dataset):
         for key, value in self.classes.items():
             self.labels[value] = key
         
-        print(coco_labels)
-        print(coco_labels_inverse)
+        print(self.coco_labels)
+        print(self.coco_labels_inverse)
 
     def __len__(self):
         return len(self.image_ids)
