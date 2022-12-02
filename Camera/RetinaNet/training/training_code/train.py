@@ -85,10 +85,9 @@ def main(args=None):
 
     print('Num training images: {}'.format(len(dataset_train)))
 
+    retinanet.train()
     for epoch_num in range(parser.start_from_epoch,parser.epochs): 
-        retinanet.training = True
-        retinanet.train()
-        retinanet.module.freeze_bn()
+        retinanet.module.freeze_bn() #setting BN layers to eval()
 
         epoch_loss = []
         epoch_class_loss = []
@@ -130,16 +129,14 @@ def main(args=None):
         scheduler.step(epoch_loss)
 
         print('\nEvaluating model...')
-        retinanet.training = False
-        retinanet.eval()
-        retinanet.module.freeze_bn()
+        retinanet.module.freeze_bn() #setting BN layers to eval()
         classification_val_loss = []
         regression_val_loss = []
         for iter_num, data in enumerate(dataloader_val):
             optimizer.zero_grad()
 
             img_data = data['img'].to(torch.float32).to(DEVICE)
-            classification_loss, regression_loss = retinanet(img_data)
+            classification_loss, regression_loss = retinanet([img_data, data['annot']])
                 
             classification_loss = classification_loss.mean()
             regression_loss = regression_loss.mean()
@@ -169,7 +166,6 @@ def main(args=None):
         epoch_model_path = join(parser.project_path,'retinanet_epoch{}.pt'.format(epoch_num))
         torch.save(retinanet,epoch_model_path)
 
-    retinanet.eval()
     final_model_path = join(parser.project_path,'retinanet_final.pt')
     torch.save(retinanet, final_model_path)
 
