@@ -38,8 +38,7 @@ def main(args=None):
     wandb.init(
             project="RetinaNet",
             name=parser.wandb_run_name,
-            resume="allow",
-            dir=parser.project_path)
+            resume="allow")
 
     if parser.coco_path is None:
         raise ValueError('Must provide --coco_path when training on COCO,')
