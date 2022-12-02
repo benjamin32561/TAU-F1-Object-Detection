@@ -157,7 +157,6 @@ def main(args=None):
         retinanet.training = False
         retinanet.eval()
         retinanet.module.freeze_bn() #setting BN layers to eval()
-        print("COCO evaluation...")
         coco_eval.evaluate_coco(dataset_val, retinanet)
 
         print("Saving epoch data to wandb...\n")
