@@ -138,7 +138,7 @@ def main(args=None):
         retinanet.module.freeze_bn()
         classification_val_loss = []
         regression_val_loss = []
-        for iter_num, data in enumerate(dataloader_train):
+        for iter_num, data in enumerate(dataloader_val):
             optimizer.zero_grad()
 
             print(data['img'].size(),data['annot'].size())
