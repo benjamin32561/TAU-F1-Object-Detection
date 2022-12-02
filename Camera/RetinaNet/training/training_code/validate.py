@@ -14,9 +14,9 @@ from torch.utils.data import DataLoader
 assert torch.__version__.split('.')[0] == '1'
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-def Validation(model,dataset,IoU_thresh=0.5):
+def Validation(model,dataloader,IoU_thresh=0.5):
     n_images = len(dataset)
-    for idx, data in enumerate(dataloader_train):
+    for idx, data in enumerate(dataloader):
 
         img = data['img'].to(torch.float32).to(DEVICE)
         print(img.size())
