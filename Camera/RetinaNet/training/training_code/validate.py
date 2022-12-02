@@ -19,10 +19,14 @@ def Validation(model,dataloader,IoU_thresh=0.5):
     for idx, data in enumerate(dataloader):
 
         img = data['img'].to(torch.float32).to(DEVICE)
-        print(img.size())
+        print(data)
         scores, labels, boxes = model(img)
 
         del img
+        del scores
+        del labels
+        del boxes
+        break
 
 def main(args=None):
     parser = argparse.ArgumentParser(description='Simple validation script for RetinaNet.')
