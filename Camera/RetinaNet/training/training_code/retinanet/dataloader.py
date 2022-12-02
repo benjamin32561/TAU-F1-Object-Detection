@@ -42,7 +42,6 @@ class CocoDataset(Dataset):
     def load_classes(self):
         # load class names (name -> label)
         categories = self.coco.loadCats(self.coco.getCatIds())
-        print(categories)
         categories.sort(key=lambda x: x['id'])
 
         self.classes             = {}
@@ -57,6 +56,9 @@ class CocoDataset(Dataset):
         self.labels = {}
         for key, value in self.classes.items():
             self.labels[value] = key
+        
+        print(coco_labels)
+        print(coco_labels_inverse)
 
     def __len__(self):
         return len(self.image_ids)
