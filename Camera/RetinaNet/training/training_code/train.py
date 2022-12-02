@@ -122,8 +122,6 @@ def main(args=None):
             del classification_loss
             del regression_loss
 
-            break
-        
         scheduler.step(np.mean(epoch_loss))
 
         #saving epoch model
@@ -147,17 +145,10 @@ def main(args=None):
             del img_data
             del classification_loss
             del regression_loss
-            break
         
         val_loss_sum = np.mean(regression_val_loss)+np.mean(classification_val_loss)
         print('Validation loss | Classification loss: {:1.5f} | Regression loss: {:1.5f} | Running loss: {:1.5f}'.format(
                 float(np.mean(classification_val_loss)), float(np.mean(regression_val_loss)), val_loss_sum))
-        
-        
-        retinanet.training = False
-        retinanet.eval()
-        retinanet.module.freeze_bn() #setting BN layers to eval()
-        coco_eval.evaluate_coco(dataset_val, retinanet)
 
         print("Saving epoch data to wandb...\n")
         wandb.log({

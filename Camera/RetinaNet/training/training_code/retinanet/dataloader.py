@@ -113,7 +113,7 @@ class CocoDataset(Dataset):
 
 
     def label_to_coco_label(self, label):
-        return self.coco_labels[label-1]
+        return self.coco_labels[label]
 
     def image_aspect_ratio(self, image_index):
         image = self.coco.loadImgs(self.image_ids[image_index])[0]
