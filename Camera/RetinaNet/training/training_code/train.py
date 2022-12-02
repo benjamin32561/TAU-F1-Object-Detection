@@ -156,7 +156,7 @@ def main(args=None):
             "val_loss":regression_val_loss+class_val_loss,
             "val_classification_loss":class_val_loss,
             "val_regression_loss":regression_val_loss},
-            step=epoch_num)
+            step=epoch_num, commit=True)
 
         epoch_model_path = join(parser.project_path,'retinanet_epoch{}.pt'.format(epoch_num))
         torch.save(retinanet,epoch_model_path)
