@@ -11,6 +11,7 @@ from os.path import join, exists
 from retinanet import model
 from retinanet.dataloader import CocoDataset, collater, Resizer, AspectRatioBasedSampler, Augmenter, Normalizer
 from torch.utils.data import DataLoader
+from retinanet import coco_eval
 
 assert torch.__version__.split('.')[0] == '1'
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -86,9 +87,10 @@ def main(args=None):
 
     print('Num training images: {}'.format(len(dataset_train)))
 
-    retinanet.train()
-    retinanet.module.freeze_bn() #setting BN layers to eval()
     for epoch_num in range(parser.start_from_epoch,parser.epochs): 
+        retinanet.training = True
+        retinanet.train()
+        retinanet.module.freeze_bn() #setting BN layers to eval()
         epoch_loss = []
         epoch_class_loss = []
         epoch_reg_loss = []
@@ -120,11 +122,17 @@ def main(args=None):
             del img_data
             del classification_loss
             del regression_loss
+
+            break
         
         epoch_loss = np.mean(epoch_loss)
         epoch_class_loss = np.mean(epoch_class_loss)
         epoch_reg_loss = np.mean(epoch_reg_loss)
         scheduler.step(epoch_loss)
+
+        #saving epoch model
+        epoch_model_path = join(parser.project_path,'retinanet_epoch{}.pt'.format(epoch_num))
+        torch.save(retinanet,epoch_model_path)
 
         print('\nEvaluating model...')
         classification_val_loss = []
@@ -143,11 +151,19 @@ def main(args=None):
             del img_data
             del classification_loss
             del regression_loss
+            break
         
         class_val_loss = np.mean(classification_val_loss)
         regression_val_loss = np.mean(regression_val_loss)
         print('validation loss: Classification loss: {:1.5f} | Regression loss: {:1.5f} | Running loss: {:1.5f}'.format(
                 float(class_val_loss), float(regression_val_loss), regression_val_loss+class_val_loss))
+        
+        
+        retinanet.training = False
+        retinanet.eval()
+        retinanet.module.freeze_bn() #setting BN layers to eval()
+        coco_eval.evaluate_coco(dataset_val, retinanet)
+
         print("Saving epoch data to wandb...\n")
         wandb.log({
             "train_loss":epoch_loss,
@@ -157,9 +173,6 @@ def main(args=None):
             "val_classification_loss":class_val_loss,
             "val_regression_loss":regression_val_loss},
             step=epoch_num, commit=True)
-
-        epoch_model_path = join(parser.project_path,'retinanet_epoch{}.pt'.format(epoch_num))
-        torch.save(retinanet,epoch_model_path)
 
     final_model_path = join(parser.project_path,'retinanet_final.pt')
     torch.save(retinanet, final_model_path)
