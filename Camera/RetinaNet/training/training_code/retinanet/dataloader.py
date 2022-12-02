@@ -42,6 +42,7 @@ class CocoDataset(Dataset):
     def load_classes(self):
         # load class names (name -> label)
         categories = self.coco.loadCats(self.coco.getCatIds())
+        print(categories)
         categories.sort(key=lambda x: x['id'])
 
         self.classes             = {}
