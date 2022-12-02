@@ -131,7 +131,7 @@ def main(args=None):
 
         print('\nEvaluating model...')
         retinanet.training = False
-        retinanet.train()
+        retinanet.train(False)
         retinanet.module.freeze_bn()
         classification_val_loss = []
         regression_val_loss = []
@@ -154,7 +154,7 @@ def main(args=None):
         
         class_val_loss = np.mean(classification_val_loss)
         regression_val_loss = np.mean(regression_val_loss)
-        print('validation data: Classification loss: {:1.5f} | Regression loss: {:1.5f} | Running loss: {:1.5f}\n'.format(
+        print('validation loss: Classification loss: {:1.5f} | Regression loss: {:1.5f} | Running loss: {:1.5f}\n'.format(
                 float(class_val_loss), float(regression_val_loss), regression_val_loss+class_val_loss))
 
         wandb.log({
