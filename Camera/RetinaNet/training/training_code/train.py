@@ -3,8 +3,10 @@ import collections
 import numpy as np
 import torch
 import torch.optim as optim
-from torchvision import transforms
 import wandb
+from torchvision import transforms
+from os import makedirs
+from os.path import join, exists
 
 from retinanet import model
 from retinanet.dataloader import CocoDataset, collater, Resizer, AspectRatioBasedSampler, Augmenter, Normalizer
@@ -18,7 +20,7 @@ def main(args=None):
 
     parser.add_argument('--coco_path', help='Path to COCO directory')
     parser.add_argument('--model_path', help='Path to model weights')
-    parser.add_argument('--save_model_path', help='Path to save model at /path/to/model.(pth/pt)')
+    parser.add_argument('--project_path', help='Path to folder to save models at',type=str, default='')
     parser.add_argument('--batch_size', help='Training batch size',type=int, default=4)
     parser.add_argument('--val_batch_size', help='Validation batch size',type=int, default=4)
     parser.add_argument('--num_workers', help='Number of workers',type=int, default=3)
@@ -39,6 +41,9 @@ def main(args=None):
 
     if parser.coco_path is None:
         raise ValueError('Must provide --coco_path when training on COCO,')
+
+    if parser.project_path!='' and not exists(parser.project_path):
+        makedirs(parser.project_path)
 
     dataset_train = CocoDataset(parser.coco_path, set_name='train2017',
                                 transform=transforms.Compose([Normalizer(), Augmenter(), Resizer()]))
@@ -86,47 +91,47 @@ def main(args=None):
         retinanet.train()
         retinanet.module.freeze_bn()
 
-        epoch_loss = []
-        epoch_class_loss = []
-        epoch_reg_loss = []
-        n_iterations = len(dataloader_train)
-        for iter_num, data in enumerate(dataloader_train):
-            try:
-                optimizer.zero_grad()
+        # epoch_loss = []
+        # epoch_class_loss = []
+        # epoch_reg_loss = []
+        # n_iterations = len(dataloader_train)
+        # for iter_num, data in enumerate(dataloader_train):
+        #     try:
+        #         optimizer.zero_grad()
                 
-                img_data = data['img'].to(torch.float32).to(DEVICE)
-                classification_loss, regression_loss = retinanet([img_data, data['annot']])
+        #         img_data = data['img'].to(torch.float32).to(DEVICE)
+        #         classification_loss, regression_loss = retinanet([img_data, data['annot']])
                     
-                classification_loss = classification_loss.mean()
-                regression_loss = regression_loss.mean()
-                loss = classification_loss + regression_loss
+        #         classification_loss = classification_loss.mean()
+        #         regression_loss = regression_loss.mean()
+        #         loss = classification_loss + regression_loss
 
-                if bool(loss == 0):
-                    continue
+        #         if bool(loss == 0):
+        #             continue
 
-                loss.backward()
-                torch.nn.utils.clip_grad_norm_(retinanet.parameters(), 0.1)
-                optimizer.step()
+        #         loss.backward()
+        #         torch.nn.utils.clip_grad_norm_(retinanet.parameters(), 0.1)
+        #         optimizer.step()
 
-                epoch_class_loss.append(float(classification_loss))
-                epoch_reg_loss.append(float(regression_loss))
-                loss_hist.append(float(loss))
-                epoch_loss.append(float(loss))
+        #         epoch_class_loss.append(float(classification_loss))
+        #         epoch_reg_loss.append(float(regression_loss))
+        #         loss_hist.append(float(loss))
+        #         epoch_loss.append(float(loss))
 
-                print('\rEpoch: {} | Iteration: {}/{} | Classification loss: {:1.5f} | Regression loss: {:1.5f} | Running loss: {:1.5f}'
-                    .format(epoch_num,iter_num,n_iterations,float(classification_loss),float(regression_loss),np.mean(loss_hist)), end='')
+        #         print('\rEpoch: {} | Iteration: {}/{} | Classification loss: {:1.5f} | Regression loss: {:1.5f} | Running loss: {:1.5f}'
+        #             .format(epoch_num,iter_num,n_iterations,float(classification_loss),float(regression_loss),np.mean(loss_hist)), end='')
 
-                del img_data
-                del classification_loss
-                del regression_loss
-            except Exception as e:
-                print(e)
-                continue
+        #         del img_data
+        #         del classification_loss
+        #         del regression_loss
+        #     except Exception as e:
+        #         print(e)
+        #         continue
         
-        epoch_loss = np.mean(epoch_loss)
-        epoch_class_loss = np.mean(epoch_class_loss)
-        epoch_reg_loss = np.mean(epoch_reg_loss)
-        scheduler.step(epoch_loss)
+        # epoch_loss = np.mean(epoch_loss)
+        # epoch_class_loss = np.mean(epoch_class_loss)
+        # epoch_reg_loss = np.mean(epoch_reg_loss)
+        # scheduler.step(epoch_loss)
 
         print('\nEvaluating model...')
         retinanet.training = False
@@ -155,19 +160,20 @@ def main(args=None):
                 float(class_val_loss), float(regression_val_loss), regression_val_loss+class_val_loss))
 
         wandb.log({
-            "train_loss":epoch_loss,
-            "train_classification_loss":epoch_class_loss,
-            "train_regression_loss":epoch_reg_loss,
+            # "train_loss":epoch_loss,
+            # "train_classification_loss":epoch_class_loss,
+            # "train_regression_loss":epoch_reg_loss,
             "val_loss":regression_val_loss+class_val_loss,
             "val_classification_loss":class_val_loss,
             "val_regression_loss":regression_val_loss},
             step=epoch_num)
 
-        torch.save(retinanet, 'retinanet_epoch{}.pt'.format(epoch_num))
+        epoch_model_path = join(parser.project_path,'retinanet_epoch{}.pt'.format(epoch_num))
+        torch.save(retinanet,epoch_model_path)
 
     retinanet.eval()
-
-    torch.save(retinanet, parser.save_model_path)
+    final_model_path = join(parser.project_path,'retinanet_final.pt')
+    torch.save(retinanet, final_model_path)
 
 if __name__ == '__main__':
     main()
