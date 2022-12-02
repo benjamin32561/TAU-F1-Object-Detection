@@ -86,9 +86,8 @@ def main(args=None):
     print('Num training images: {}'.format(len(dataset_train)))
 
     retinanet.train()
+    retinanet.module.freeze_bn() #setting BN layers to eval()
     for epoch_num in range(parser.start_from_epoch,parser.epochs): 
-        retinanet.module.freeze_bn() #setting BN layers to eval()
-
         epoch_loss = []
         epoch_class_loss = []
         epoch_reg_loss = []
@@ -120,8 +119,6 @@ def main(args=None):
             del img_data
             del classification_loss
             del regression_loss
-
-            break
         
         epoch_loss = np.mean(epoch_loss)
         epoch_class_loss = np.mean(epoch_class_loss)
@@ -129,7 +126,6 @@ def main(args=None):
         scheduler.step(epoch_loss)
 
         print('\nEvaluating model...')
-        retinanet.module.freeze_bn() #setting BN layers to eval()
         classification_val_loss = []
         regression_val_loss = []
         for iter_num, data in enumerate(dataloader_val):
@@ -146,8 +142,6 @@ def main(args=None):
             del img_data
             del classification_loss
             del regression_loss
-
-            break
         
         class_val_loss = np.mean(classification_val_loss)
         regression_val_loss = np.mean(regression_val_loss)
