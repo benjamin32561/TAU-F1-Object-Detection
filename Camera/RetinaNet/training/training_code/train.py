@@ -119,6 +119,8 @@ def main(args=None):
             del img_data
             del classification_loss
             del regression_loss
+
+            break
         
         epoch_loss = np.mean(epoch_loss)
         epoch_class_loss = np.mean(epoch_class_loss)
@@ -142,12 +144,13 @@ def main(args=None):
             del img_data
             del classification_loss
             del regression_loss
+            break
         
         class_val_loss = np.mean(classification_val_loss)
         regression_val_loss = np.mean(regression_val_loss)
         print('validation loss: Classification loss: {:1.5f} | Regression loss: {:1.5f} | Running loss: {:1.5f}\n'.format(
                 float(class_val_loss), float(regression_val_loss), regression_val_loss+class_val_loss))
-
+        print("Saving epoch data to wandb...")
         wandb.log({
             "train_loss":epoch_loss,
             "train_classification_loss":epoch_class_loss,
