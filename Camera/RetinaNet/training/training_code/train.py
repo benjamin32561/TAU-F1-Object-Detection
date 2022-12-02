@@ -141,10 +141,8 @@ def main(args=None):
         regression_val_loss = []
         for iter_num, data in enumerate(dataloader_train):
             optimizer.zero_grad()
-            if torch.cuda.is_available():
-                classification_loss, regression_loss = retinanet([data['img'].cuda().float(), data['annot']])
-            else:
-                classification_loss, regression_loss = retinanet([data['img'].float(), data['annot']])
+            classification_loss, regression_loss = retinanet([data['img'].to(torch.float32).to(DEVICE),
+                                                              data['annot']])
                 
             classification_loss = classification_loss.mean()
             regression_loss = regression_loss.mean()
