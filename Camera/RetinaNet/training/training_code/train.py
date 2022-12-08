@@ -23,7 +23,6 @@ def main(args=None):
     parser.add_argument('--model_path', help='Path to model weights')
     parser.add_argument('--project_path', help='Path to folder to save models at',type=str, default='')
     parser.add_argument('--batch_size', help='Training batch size',type=int, default=4)
-    parser.add_argument('--val_batch_size', help='Validation batch size',type=int, default=4)
     parser.add_argument('--num_workers', help='Number of workers',type=int, default=3)
     parser.add_argument('--depth', help='Resnet depth, must be one of 18, 34, 50, 101, 152', type=int, default=50)
     parser.add_argument('--epochs', help='Number of epochs', type=int, default=100)
@@ -55,7 +54,7 @@ def main(args=None):
     dataloader_train = DataLoader(dataset_train, num_workers=parser.num_workers, collate_fn=collater, batch_sampler=sampler)
 
     if dataset_val is not None:
-        sampler_val = AspectRatioBasedSampler(dataset_val, batch_size=parser.val_batch_size, drop_last=False)
+        sampler_val = AspectRatioBasedSampler(dataset_val, batch_size=1, drop_last=False)
         dataloader_val = DataLoader(dataset_val, num_workers=parser.num_workers, collate_fn=collater, batch_sampler=sampler_val)
 
     # Create the model
