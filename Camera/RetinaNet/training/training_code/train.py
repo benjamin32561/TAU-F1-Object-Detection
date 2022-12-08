@@ -8,6 +8,7 @@ from os import makedirs
 from os.path import join, exists
 
 from retinanet import model
+from retinanet.losses import FocalLoss
 from retinanet.dataloader import CocoDataset, collater, Resizer, AspectRatioBasedSampler, Augmenter, Normalizer
 from torch.utils.data import DataLoader
 from retinanet.losses import ValidateModel
@@ -87,6 +88,7 @@ def main(args=None):
 
     best_model = -1
     best_loss = -1
+    loss_func = FocalLoss()
     for epoch_num in range(parser.start_from_epoch,parser.epochs): 
         retinanet.training = True
         retinanet.train()
@@ -146,7 +148,7 @@ def main(args=None):
         
         retinanet.training = False
         retinanet.eval()
-        val_cls_loss,val_reg_loss,val_cls_pre,val_cls_rec,val_reg_pre,val_reg_rec = ValidateModel(retinanet,dataloader_val)
+        val_cls_loss,val_reg_loss,val_cls_pre,val_cls_rec,val_reg_pre,val_reg_rec = ValidateModel(retinanet,dataloader_val,loss_func)
         
         print('Validation loss | Classification loss: {:1.5f} | Regression loss: {:1.5f} | Running loss: {:1.5f}'.format(
                 val_cls_loss, val_reg_loss, val_reg_loss+val_cls_loss))
