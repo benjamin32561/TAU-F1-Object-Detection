@@ -1,5 +1,4 @@
 import argparse
-import collections
 import numpy as np
 import torch
 import torch.optim as optim
@@ -11,6 +10,8 @@ from os.path import join, exists
 from retinanet import model
 from retinanet.dataloader import CocoDataset, collater, Resizer, AspectRatioBasedSampler, Augmenter, Normalizer
 from torch.utils.data import DataLoader
+from retinanet.losses import ValidateModel
+from copy import deepcopy
 
 assert torch.__version__.split('.')[0] == '1'
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -85,10 +86,12 @@ def main(args=None):
 
     print('Num training images: {}'.format(len(dataset_train)))
 
-    retinanet.training = True
-    retinanet.train()
-    retinanet.module.freeze_bn() #setting BN layers to eval()
+    best_model = -1
+    best_loss = -1
     for epoch_num in range(parser.start_from_epoch,parser.epochs): 
+        retinanet.training = True
+        retinanet.train()
+        retinanet.module.freeze_bn() #setting BN layers to eval()
         epoch_loss = []
         epoch_class_loss = []
         epoch_reg_loss = []
@@ -114,58 +117,66 @@ def main(args=None):
             epoch_reg_loss.append(float(regression_loss))
             epoch_loss.append(float(loss))
 
-            print('\rEpoch: {} | Iteration: {}/{} | Classification loss: {:1.5f} | Regression loss: {:1.5f} | Running loss: {:1.5f}'
-                .format(epoch_num,iter_num,n_iterations,float(classification_loss),float(regression_loss),np.mean(epoch_loss)), end='')
-            
             del img_data
             del classification_loss
             del regression_loss
+
+            print('\rEpoch: {} | Iteration: {}/{} | Classification loss: {:1.5f} | Regression loss: {:1.5f} | Running loss: {:1.5f}'
+                .format(epoch_num,iter_num,n_iterations,np.mean(epoch_class_loss),np.mean(epoch_reg_loss),np.mean(epoch_loss)), end='')
 
         scheduler.step(np.mean(epoch_loss))
 
-        #saving epoch model
-        epoch_model_path = join(parser.project_path,'retinanet_epoch{}.pt'.format(epoch_num))
-        torch.save(retinanet,epoch_model_path)
+        print('\nValidating model')
+        # classification_val_loss = []
+        # regression_val_loss = []
+        # for iter_num, data in enumerate(dataloader_val):
+        #     optimizer.zero_grad()
 
-        print('\nEvaluating model...')
-        classification_val_loss = []
-        regression_val_loss = []
-        for iter_num, data in enumerate(dataloader_val):
-            optimizer.zero_grad()
-
-            img_data = data['img'].to(torch.float32).to(DEVICE)
-            classification_loss, regression_loss = retinanet([img_data, data['annot']])
+        #     img_data = data['img'].to(torch.float32).to(DEVICE)
+        #     classification_loss, regression_loss = retinanet([img_data, data['annot']])
                 
-            classification_loss = classification_loss.mean()
-            regression_loss = regression_loss.mean()
+        #     classification_loss = classification_loss.mean()
+        #     regression_loss = regression_loss.mean()
             
-            classification_val_loss.append(float(classification_loss))
-            regression_val_loss.append(float(regression_loss))
-            del img_data
-            del classification_loss
-            del regression_loss
+        #     classification_val_loss.append(float(classification_loss))
+        #     regression_val_loss.append(float(regression_loss))
+        #     del img_data
+        #     del classification_loss
+        #     del regression_loss
+        #val_loss_sum = np.mean(regression_val_loss)+np.mean(classification_val_loss)
         
-        val_loss_sum = np.mean(regression_val_loss)+np.mean(classification_val_loss)
+        retinanet.training = False
+        retinanet.eval()
+        val_cls_loss,val_reg_loss,val_cls_pre,val_cls_rec,val_reg_pre,val_reg_rec = ValidateModel(retinanet,dataloader_val)
+        
         print('Validation loss | Classification loss: {:1.5f} | Regression loss: {:1.5f} | Running loss: {:1.5f}'.format(
-                float(np.mean(classification_val_loss)), float(np.mean(regression_val_loss)), val_loss_sum))
+                val_cls_loss, val_reg_loss, val_reg_loss+val_cls_loss))
 
+        if best_loss==-1 or best_loss>val_reg_loss+val_cls_loss:
+            best_loss = val_reg_loss+val_cls_loss
+            best_model = deepcopy(retinanet)
         print("Saving epoch data to wandb...\n")
         wandb.log({
-            "train_loss":np.mean(epoch_loss),
-            "train_classification_loss":np.mean(epoch_class_loss),
-            "train_regression_loss":np.mean(epoch_reg_loss),
-            "val_loss":val_loss_sum,
-            "val_classification_loss":np.mean(classification_val_loss),
-            "val_regression_loss":np.mean(regression_val_loss)},
+            "train loss":np.mean(epoch_loss),
+            "train classification_loss":np.mean(epoch_class_loss),
+            "train regression_loss":np.mean(epoch_reg_loss),
+            "validation loss":val_reg_loss+val_cls_loss,
+            "validation classification loss":val_cls_loss,
+            "validation regression loss":val_reg_loss,
+            "validation classification precision":val_cls_pre,
+            "validation regression precision":val_reg_pre,
+            "validation classification recall":val_cls_rec,
+            "validation regression recall":val_reg_rec},
             step=epoch_num, commit=True)
         
         del epoch_loss
         del epoch_class_loss
         del epoch_reg_loss
-        del classification_val_loss
-        del regression_val_loss
 
-    final_model_path = join(parser.project_path,'retinanet_final.pt')
+    #saving epoch model
+    best_model_path = join(parser.project_path,'best.pt'.format(epoch_num))
+    torch.save(best_model,best_model_path)
+    final_model_path = join(parser.project_path,'last.pt')
     torch.save(retinanet, final_model_path)
 
 if __name__ == '__main__':

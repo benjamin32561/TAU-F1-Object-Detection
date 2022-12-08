@@ -2,6 +2,9 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+assert torch.__version__.split('.')[0] == '1'
+DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
 def calc_iou(a, b):
     area = (b[:, 2] - b[:, 0]) * (b[:, 3] - b[:, 1])
 
@@ -89,8 +92,7 @@ class FocalLoss(nn.Module):
             # compute the loss for classification
             targets = torch.ones(classification.shape) * -1
 
-            if torch.cuda.is_available():
-                targets = targets.cuda()
+            targets = targets.to(DEVICE)
 
             targets[torch.lt(IoU_max, 0.4), :] = 0
 
@@ -103,10 +105,7 @@ class FocalLoss(nn.Module):
             targets[positive_indices, :] = 0
             targets[positive_indices, assigned_annotations[positive_indices, 4].long()] = 1
 
-            if torch.cuda.is_available():
-                alpha_factor = torch.ones(targets.shape).cuda() * alpha
-            else:
-                alpha_factor = torch.ones(targets.shape) * alpha
+            alpha_factor = torch.ones(targets.shape).to(DEVICE) * alpha
 
             alpha_factor = torch.where(torch.eq(targets, 1.), alpha_factor, 1. - alpha_factor)
             focal_weight = torch.where(torch.eq(targets, 1.), 1. - classification, classification)
@@ -117,10 +116,9 @@ class FocalLoss(nn.Module):
             # cls_loss = focal_weight * torch.pow(bce, gamma)
             cls_loss = focal_weight * bce
 
-            if torch.cuda.is_available():
-                cls_loss = torch.where(torch.ne(targets, -1.0), cls_loss, torch.zeros(cls_loss.shape).cuda())
-            else:
-                cls_loss = torch.where(torch.ne(targets, -1.0), cls_loss, torch.zeros(cls_loss.shape))
+            tmp = torch.zeros(cls_loss.shape).to(DEVICE)
+            cls_loss = torch.where(torch.ne(targets, -1.0), cls_loss, tmp)
+            del tmp
 
             classification_losses.append(cls_loss.sum()/torch.clamp(num_positive_anchors.float(), min=1.0))
 
@@ -167,11 +165,81 @@ class FocalLoss(nn.Module):
                 )
                 regression_losses.append(regression_loss.mean())
             else:
-                if torch.cuda.is_available():
-                    regression_losses.append(torch.tensor(0).float().cuda())
-                else:
-                    regression_losses.append(torch.tensor(0).float())
+                regression_losses.append(torch.tensor(0).float().to(DEVICE))
 
         return torch.stack(classification_losses).mean(dim=0, keepdim=True), torch.stack(regression_losses).mean(dim=0, keepdim=True)
 
 
+def Recall(tp,fn):
+    return tp/(tp+fn)
+
+def Precision(tp,fp):
+    return tp/(tp+fp)
+
+def ValidateModel(model,dataloader,IoU_thresh=0.5):
+    n_images = len(dataloader)
+    loss_data = []
+    class_data = []
+    bbx_data = []
+    for idx, data in enumerate(dataloader):
+        img = data['img'].to(torch.float32).to(DEVICE)
+        annot = data['annot'][0]
+
+        bbx_label = annot[:,:-1]
+        class_label = annot[:,-1]
+        n_objects = bbx_label.size()[0]
+
+        scores, class_pred, bbx_preds, class_loss, reg_loss = model(img)
+        loss_data.append([class_loss, reg_loss])
+        n_pred_objects = class_pred.size()[0]
+
+        n_bbx_tp = 0
+        n_bbx_fp = 0
+        n_bbx_fn = 0
+        n_class_tp = 0
+        n_class_fp = 0
+        n_class_fn = 0
+        #calculating class prediction
+        for i in range(n_objects):
+            bbx = bbx_label[i].repeat(n_pred_objects, 1)
+            iou = calc_iou(bbx,bbx_preds)
+            predicted_idx = iou>=IoU_thresh
+            predicted = iou[predicted_idx]
+            if predicted.size(0)==0:
+                n_bbx_fn+=1 #iou with every prediction gives iou<thresh
+                n_class_fn+=1 #failed to predict existing instance of class
+                continue
+            bbx_class = class_label[i]
+            rel_pred_class = class_pred[predicted_idx]
+            n_current_class_tp=rel_pred_class[rel_pred_class==bbx_class].size(0)
+            n_class_tp+=n_current_class_tp #iou>=thresh and same class
+
+        #calculating bbx prediction
+        for predicted_bbx in bbx_preds:
+            bbx = predicted_bbx.repeat(n_objects, 1)
+            iou = calc_iou(bbx,bbx_label)
+            rel_iou_idx = iou>=IoU_thresh
+            n_rel_iou = iou[rel_iou_idx].size(0)
+            if n_rel_iou==0:
+                n_bbx_fp+=1
+                n_class_fp+=1
+            else:
+                n_bbx_tp+=1
+        del img
+        del scores
+        del class_pred
+        del bbx_preds
+
+        class_data.append([Precision(n_class_fp,n_class_fp),Recall(n_class_fp,n_class_fn)])
+        bbx_data.append([Precision(n_bbx_fp,n_bbx_fp),Recall(n_bbx_fp,n_bbx_fn)])
+        print("\rValidating {}/{} | loss: {} | class precision: {} | class recall: {} | bbx precision: {} | bbx recall: {}".format(idx+1,\
+            n_images,),end='')
+    
+    class_data = np.array(class_data)
+    bbx_data = np.array(bbx_data)
+    loss_data = np.array(loss_data)
+
+    #cls_loss,reg_loss,cls_pre,cls_rec,reg_pre,reg_rec
+    return loss_data[:,0].mean(),loss_data[:,1].mean(), \
+           class_data[:,0].mean(),class_data[:,1].mean(), \
+           bbx_data[:,0].mean(),bbx_data[:,1].mean()
