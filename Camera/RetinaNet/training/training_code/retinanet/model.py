@@ -15,6 +15,7 @@ model_urls = {
     'resnet152': 'https://download.pytorch.org/models/resnet152-b121ed2d.pth',
 }
 
+DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 class PyramidFeatures(nn.Module):
     def __init__(self, C3_size, C4_size, C5_size, feature_size=256):
@@ -186,8 +187,6 @@ class ResNet(nn.Module):
 
         self.clipBoxes = ClipBoxes()
 
-        self.focalLoss = losses.FocalLoss()
-
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
@@ -229,11 +228,7 @@ class ResNet(nn.Module):
                 layer.eval()
 
     def forward(self, inputs):
-
-        if self.training:
-            img_batch, annotations = inputs
-        else:
-            img_batch = inputs
+        img_batch = inputs
 
         x = self.conv1(img_batch)
         x = self.bn1(x)
@@ -253,51 +248,41 @@ class ResNet(nn.Module):
 
         anchors = self.anchors(img_batch)
 
-        class_loss, reg_loss = self.focalLoss(classification, regression, anchors, annotations)
-        if self.training:
-            return class_loss, reg_loss
-        else:
-            transformed_anchors = self.regressBoxes(anchors, regression)
-            transformed_anchors = self.clipBoxes(transformed_anchors, img_batch)
+        return classification, regression, anchors
 
-            finalResult = [[], [], []]
+    def ModelOutToPrediction(self,classification,regression,anchors,img_batch):
+        transformed_anchors = self.regressBoxes(anchors, regression)
+        transformed_anchors = self.clipBoxes(transformed_anchors, img_batch)
 
-            finalScores = torch.Tensor([])
-            finalAnchorBoxesIndexes = torch.Tensor([]).long()
-            finalAnchorBoxesCoordinates = torch.Tensor([])
+        finalResult = [[], [], []]
 
-            if torch.cuda.is_available():
-                finalScores = finalScores.cuda()
-                finalAnchorBoxesIndexes = finalAnchorBoxesIndexes.cuda()
-                finalAnchorBoxesCoordinates = finalAnchorBoxesCoordinates.cuda()
+        finalScores = torch.Tensor([]).to(DEVICE)
+        finalAnchorBoxesIndexes = torch.Tensor([]).long().to(DEVICE)
+        finalAnchorBoxesCoordinates = torch.Tensor([]).to(DEVICE)
 
-            for i in range(classification.shape[2]):
-                scores = torch.squeeze(classification[:, :, i])
-                scores_over_thresh = (scores >= 0.05)
-                if scores_over_thresh.sum() == 0:
-                    # no boxes to NMS, just continue
-                    continue
+        for i in range(classification.shape[2]):
+            scores = torch.squeeze(classification[:, :, i])
+            scores_over_thresh = (scores >= 0.05)
+            if scores_over_thresh.sum() == 0:
+                # no boxes to NMS, just continue
+                continue
 
-                scores = scores[scores_over_thresh]
-                anchorBoxes = torch.squeeze(transformed_anchors)
-                anchorBoxes = anchorBoxes[scores_over_thresh]
-                anchors_nms_idx = nms(anchorBoxes, scores, 0.5)
+            scores = scores[scores_over_thresh]
+            anchorBoxes = torch.squeeze(transformed_anchors)
+            anchorBoxes = anchorBoxes[scores_over_thresh]
+            anchors_nms_idx = nms(anchorBoxes, scores, 0.5)
 
-                finalResult[0].extend(scores[anchors_nms_idx])
-                finalResult[1].extend(torch.tensor([i] * anchors_nms_idx.shape[0]))
-                finalResult[2].extend(anchorBoxes[anchors_nms_idx])
+            finalResult[0].extend(scores[anchors_nms_idx])
+            finalResult[1].extend(torch.tensor([i] * anchors_nms_idx.shape[0]))
+            finalResult[2].extend(anchorBoxes[anchors_nms_idx])
 
-                finalScores = torch.cat((finalScores, scores[anchors_nms_idx]))
-                finalAnchorBoxesIndexesValue = torch.tensor([i] * anchors_nms_idx.shape[0])
-                if torch.cuda.is_available():
-                    finalAnchorBoxesIndexesValue = finalAnchorBoxesIndexesValue.cuda()
+            finalScores = torch.cat((finalScores, scores[anchors_nms_idx]))
+            finalAnchorBoxesIndexesValue = torch.tensor([i] * anchors_nms_idx.shape[0]).to(DEVICE)
 
-                finalAnchorBoxesIndexes = torch.cat((finalAnchorBoxesIndexes, finalAnchorBoxesIndexesValue))
-                finalAnchorBoxesCoordinates = torch.cat((finalAnchorBoxesCoordinates, anchorBoxes[anchors_nms_idx]))
+            finalAnchorBoxesIndexes = torch.cat((finalAnchorBoxesIndexes, finalAnchorBoxesIndexesValue))
+            finalAnchorBoxesCoordinates = torch.cat((finalAnchorBoxesCoordinates, anchorBoxes[anchors_nms_idx]))
 
-            return finalScores, finalAnchorBoxesIndexes, finalAnchorBoxesCoordinates, class_loss, reg_loss
-
-
+        return finalScores, finalAnchorBoxesIndexes, finalAnchorBoxesCoordinates
 
 def resnet18(num_classes, pretrained=False, **kwargs):
     """Constructs a ResNet-18 model.
