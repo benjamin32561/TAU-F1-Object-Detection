@@ -96,33 +96,33 @@ def main(args=None):
         epoch_class_loss = []
         epoch_reg_loss = []
         n_iterations = len(dataloader_train)
-        for iter_num, data in enumerate(dataloader_train):
-            optimizer.zero_grad()
+        # for iter_num, data in enumerate(dataloader_train):
+        #     optimizer.zero_grad()
             
-            img_data = data['img'].to(torch.float32).to(DEVICE)
-            classification_loss, regression_loss = retinanet([img_data, data['annot']])
+        #     img_data = data['img'].to(torch.float32).to(DEVICE)
+        #     classification_loss, regression_loss = retinanet([img_data, data['annot']])
                 
-            classification_loss = classification_loss.mean()
-            regression_loss = regression_loss.mean()
-            loss = classification_loss + regression_loss
+        #     classification_loss = classification_loss.mean()
+        #     regression_loss = regression_loss.mean()
+        #     loss = classification_loss + regression_loss
 
-            if bool(loss == 0):
-                continue
+        #     if bool(loss == 0):
+        #         continue
 
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(retinanet.parameters(), 0.1)
-            optimizer.step()
+        #     loss.backward()
+        #     torch.nn.utils.clip_grad_norm_(retinanet.parameters(), 0.1)
+        #     optimizer.step()
 
-            epoch_class_loss.append(float(classification_loss))
-            epoch_reg_loss.append(float(regression_loss))
-            epoch_loss.append(float(loss))
+        #     epoch_class_loss.append(float(classification_loss))
+        #     epoch_reg_loss.append(float(regression_loss))
+        #     epoch_loss.append(float(loss))
 
-            del img_data
-            del classification_loss
-            del regression_loss
+        #     del img_data
+        #     del classification_loss
+        #     del regression_loss
 
-            print('\rEpoch: {} | Iteration: {}/{} | Classification loss: {:1.5f} | Regression loss: {:1.5f} | Running loss: {:1.5f}'
-                .format(epoch_num,iter_num,n_iterations,np.mean(epoch_class_loss),np.mean(epoch_reg_loss),np.mean(epoch_loss)), end='')
+        #     print('\rEpoch: {} | Iteration: {}/{} | Classification loss: {:1.5f} | Regression loss: {:1.5f} | Running loss: {:1.5f}'
+        #         .format(epoch_num,iter_num,n_iterations,np.mean(epoch_class_loss),np.mean(epoch_reg_loss),np.mean(epoch_loss)), end='')
 
         scheduler.step(np.mean(epoch_loss))
 
