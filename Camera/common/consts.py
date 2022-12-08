@@ -1,5 +1,5 @@
 #tvt split
-DATASET_SPLIT_RATIO = {"train":0.8,"val":0.2}
+DATASET_SPLIT_RATIO = {"train":0.99,"val":0.01}
 
 #source path consts
 SRC_PATH = "/content/dataset/"
