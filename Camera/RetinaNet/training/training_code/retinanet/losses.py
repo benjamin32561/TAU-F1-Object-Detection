@@ -186,7 +186,7 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
     bbx_data = []
     for idx, data in enumerate(dataloader):
         img = data['img'].to(torch.float32).to(DEVICE)
-        clas,reg,anch,scores, class_pred, bbx_preds = model(img)
+        clas,reg,anch,scores,class_pred,bbx_preds = model(img)
         annot = data['annot'].to(DEVICE)
         
         class_loss, reg_loss = loss_fun(clas,reg,anch,annot)
@@ -194,7 +194,6 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         loss_data.append([class_loss, reg_loss])
         n_pred_objects = class_pred.size()[0]
 
-        print("im an idiot")
         annot = annot[0]
         bbx_label = annot[:,:-1]
         class_label = annot[:,-1]
@@ -208,6 +207,7 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         #calculating class prediction
         for i in range(n_objects):
             bbx = bbx_label[i].repeat(n_pred_objects, 1)
+            print(bbx.size(),bbx_preds.size())
             iou = calc_iou(bbx,bbx_preds)
             predicted_idx = iou>=IoU_thresh
             predicted = iou[predicted_idx]
