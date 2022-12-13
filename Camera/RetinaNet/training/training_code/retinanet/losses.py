@@ -189,7 +189,7 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         clas,reg,anch,scores, class_pred, bbx_preds = model(img)
         annot = data['annot'].to(DEVICE)
         
-        print(clas,reg,anch)
+        print(clas.size(),reg.size(),anch.size())
         print(annot.size())
         class_loss, reg_loss = loss_fun(clas,reg,anch,annot)
 
