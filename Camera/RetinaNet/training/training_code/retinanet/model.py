@@ -248,17 +248,10 @@ class ResNet(nn.Module):
 
         anchors = self.anchors(img_batch)
 
-        print(regression.size())
-        print(classification.size())
-        print(anchors.size())
-
         if self.training:
             return classification, regression, anchors
         else:
             scores, class_pred, bbx_preds = self.ModelOutToPrediction(classification, regression,anchors,img_batch)
-            print(regression.size())
-            print(classification.size())
-            print(anchors.size())
             return classification, regression, anchors, scores, class_pred, bbx_preds
 
     def ModelOutToPrediction(self,classification,regression,anchors,img_batch):
