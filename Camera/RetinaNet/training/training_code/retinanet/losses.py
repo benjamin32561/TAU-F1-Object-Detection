@@ -6,8 +6,6 @@ assert torch.__version__.split('.')[0] == '1'
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 def calc_iou(a, b):
-    print(a.size())
-    print(b.size())
     area = (b[:, 2] - b[:, 0]) * (b[:, 3] - b[:, 1])
 
     iw = torch.min(torch.unsqueeze(a[:, 2], dim=1), b[:, 2]) - torch.max(torch.unsqueeze(a[:, 0], 1), b[:, 0])
@@ -83,7 +81,7 @@ class FocalLoss(nn.Module):
                     regression_losses.append(torch.tensor(0).float())
 
                 continue
-
+            
             IoU = calc_iou(anchors[0, :, :], bbox_annotation[:, :4]) # num_anchors x num_annotations
 
             IoU_max, IoU_argmax = torch.max(IoU, dim=1) # num_anchors x 1
@@ -196,6 +194,7 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         loss_data.append([class_loss, reg_loss])
         n_pred_objects = class_pred.size()[0]
 
+        print("im an idiot")
         annot = annot[0]
         bbx_label = annot[:,:-1]
         class_label = annot[:,-1]
