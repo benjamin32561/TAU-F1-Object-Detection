@@ -6,6 +6,8 @@ assert torch.__version__.split('.')[0] == '1'
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 def calc_iou(a, b):
+    print(a.size())
+    print(b.size())
     area = (b[:, 2] - b[:, 0]) * (b[:, 3] - b[:, 1])
 
     iw = torch.min(torch.unsqueeze(a[:, 2], dim=1), b[:, 2]) - torch.max(torch.unsqueeze(a[:, 0], 1), b[:, 0])
@@ -189,8 +191,6 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         clas,reg,anch,scores, class_pred, bbx_preds = model(img)
         annot = data['annot'].to(DEVICE)
         
-        print(clas.size(),reg.size(),anch.size())
-        print(annot.size())
         class_loss, reg_loss = loss_fun(clas,reg,anch,annot)
 
         loss_data.append([class_loss, reg_loss])
