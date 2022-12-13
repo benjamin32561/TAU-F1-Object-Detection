@@ -157,18 +157,18 @@ def main(args=None):
             best_loss = val_reg_loss+val_cls_loss
             best_model = deepcopy(retinanet)
         print("Saving epoch data to wandb...\n")
-        wandb.log({
-            "train loss":np.mean(epoch_loss),
-            "train classification_loss":np.mean(epoch_class_loss),
-            "train regression_loss":np.mean(epoch_reg_loss),
-            "validation loss":val_reg_loss+val_cls_loss,
-            "validation classification loss":val_cls_loss,
-            "validation regression loss":val_reg_loss,
-            "validation classification precision":val_cls_pre,
-            "validation regression precision":val_reg_pre,
-            "validation classification recall":val_cls_rec,
-            "validation regression recall":val_reg_rec},
-            step=epoch_num, commit=True)
+        # wandb.log({
+        #     "train loss":np.mean(epoch_loss),
+        #     "train classification_loss":np.mean(epoch_class_loss),
+        #     "train regression_loss":np.mean(epoch_reg_loss),
+        #     "validation loss":val_reg_loss+val_cls_loss,
+        #     "validation classification loss":val_cls_loss,
+        #     "validation regression loss":val_reg_loss,
+        #     "validation classification precision":val_cls_pre,
+        #     "validation regression precision":val_reg_pre,
+        #     "validation classification recall":val_cls_rec,
+        #     "validation regression recall":val_reg_rec},
+        #     step=epoch_num, commit=True)
         
         del epoch_loss
         del epoch_class_loss
