@@ -35,10 +35,10 @@ def main(args=None):
 
     # Create the data loaders
 
-    wandb.init(
-            project="RetinaNet",
-            name=parser.wandb_run_name,
-            resume="allow")
+    # wandb.init(
+    #         project="RetinaNet",
+    #         name=parser.wandb_run_name,
+    #         resume="allow")
 
     if parser.coco_path is None:
         raise ValueError('Must provide --coco_path when training on COCO,')
@@ -149,7 +149,7 @@ def main(args=None):
         retinanet.training = False
         retinanet.eval()
         val_cls_loss,val_reg_loss,val_cls_pre,val_cls_rec,val_reg_pre,val_reg_rec = ValidateModel(retinanet,dataloader_val,loss_func)
-        
+
         print('Validation loss | Classification loss: {:1.5f} | Regression loss: {:1.5f} | Running loss: {:1.5f}'.format(
                 val_cls_loss, val_reg_loss, val_reg_loss+val_cls_loss))
 
