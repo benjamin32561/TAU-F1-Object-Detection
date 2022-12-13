@@ -177,18 +177,20 @@ def Precision(tp,fp):
     return tp/(tp+fp)
 
 def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
+    model.training = False
+    model.eval()
+
     n_images = len(dataloader)
     loss_data = []
     class_data = []
     bbx_data = []
     for idx, data in enumerate(dataloader):
         img = data['img'].to(torch.float32).to(DEVICE)
-        clas,reg,anch = model(img)
+        clas,reg,anch,scores, class_pred, bbx_preds = model(img)
         annot = data['annot'].to(DEVICE)
 
         class_loss, reg_loss = loss_fun(clas,reg,anch,annot)
 
-        scores, class_pred, bbx_preds = model.ModelOutToPrediction(clas,reg,anch,img)
         loss_data.append([class_loss, reg_loss])
         n_pred_objects = class_pred.size()[0]
 
