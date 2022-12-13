@@ -74,7 +74,12 @@ def main(args=None):
     else:
         raise ValueError('Unsupported model depth, must be one of 18, 34, 50, 101, 152')
 
-    retinanet = retinanet.to(DEVICE)#torch.nn.DataParallel(retinanet).to(DEVICE)
+    retinanet.to(DEVICE)
+
+    if torch.cuda.is_available():
+        retinanet = torch.nn.DataParallel(retinanet).cuda()
+    else:
+        retinanet = torch.nn.DataParallel(retinanet)
 
     optimizer = optim.Adam(retinanet.parameters(), lr=parser.lr)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=3, verbose=True)
