@@ -247,7 +247,7 @@ class ResNet(nn.Module):
         classification = torch.cat([self.classificationModel(feature) for feature in features], dim=1)
 
         anchors = self.anchors(img_batch)
-
+        
         if self.training:
             return classification, regression, anchors
         else:
@@ -286,6 +286,7 @@ class ResNet(nn.Module):
             finalAnchorBoxesIndexes = torch.cat((finalAnchorBoxesIndexes, finalAnchorBoxesIndexesValue))
             finalAnchorBoxesCoordinates = torch.cat((finalAnchorBoxesCoordinates, anchorBoxes[anchors_nms_idx]))
 
+            del finalAnchorBoxesIndexesValue,scores_over_thresh,scores
         return finalScores, finalAnchorBoxesIndexes, finalAnchorBoxesCoordinates
 
 def resnet18(num_classes, pretrained=False, **kwargs):
