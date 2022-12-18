@@ -239,8 +239,8 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         del class_pred
         del bbx_preds
 
-        class_data.append([Precision(n_class_fp,n_class_fp),Recall(n_class_fp,n_class_fn)])
-        bbx_data.append([Precision(n_bbx_fp,n_bbx_fp),Recall(n_bbx_fp,n_bbx_fn)])
+        class_data.append([Precision(n_class_tp,n_class_fp),Recall(n_class_fp,n_class_fn)])
+        bbx_data.append([Precision(n_bbx_tp,n_bbx_fp),Recall(n_bbx_fp,n_bbx_fn)])
         print("\rValidating {}/{} | loss: {} | class precision: {} | class recall: {} | bbx precision: {} | bbx recall: {}".format(idx+1,\
             n_images,),end='')
     
