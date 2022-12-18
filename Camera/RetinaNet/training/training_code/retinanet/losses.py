@@ -174,6 +174,8 @@ def Recall(tp,fn):
     return tp/(tp+fn)
 
 def Precision(tp,fp):
+    if (tp+fp)==0:
+        return 0
     return tp/(tp+fp)
 
 def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
