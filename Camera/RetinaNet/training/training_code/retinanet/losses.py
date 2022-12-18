@@ -221,6 +221,7 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
                 rel_pred_class = class_pred[predicted_idx]
                 n_current_class_tp=rel_pred_class[rel_pred_class==bbx_class].size(0)
                 n_class_tp+=n_current_class_tp #iou>=thresh and same class
+                del iou,bbx
             #calculating bbx prediction fp,tp,fn
             for predicted_bbx in bbx_preds:
                 bbx = predicted_bbx.repeat(n_objects, 1)
@@ -232,18 +233,17 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
                     n_class_fp+=1
                 else:
                     n_bbx_tp+=1
+                del iou,bbx
         else:
             n_bbx_fn+=n_objects
             n_class_fn+=n_objects
         
-        del img
-        del scores
-        del class_pred
-        del bbx_preds
-        
         class_data.append([Precision(n_class_tp,n_class_fp),Recall(n_class_fp,n_class_fn)])
         bbx_data.append([Precision(n_bbx_tp,n_bbx_fp),Recall(n_bbx_fp,n_bbx_fn)])
-        print("\rValidating {}/{}",end='')
+        print(f"\rValidating {idx+1}/{n_images}",end='')
+        
+        del img,clas,reg,anch,scores,annot
+        del bbx_preds,bbx_preds,class_pred
     
     class_data = np.array(class_data)
     bbx_data = np.array(bbx_data)
