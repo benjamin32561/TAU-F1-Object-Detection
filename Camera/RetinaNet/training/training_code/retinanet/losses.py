@@ -240,15 +240,17 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         del scores
         del class_pred
         del bbx_preds
-
+        
         class_data.append([Precision(n_class_tp,n_class_fp),Recall(n_class_fp,n_class_fn)])
         bbx_data.append([Precision(n_bbx_tp,n_bbx_fp),Recall(n_bbx_fp,n_bbx_fn)])
-        print("\rValidating {}/{} | loss: {} | class precision: {} | class recall: {} | bbx precision: {} | bbx recall: {}".format(idx+1,\
-            n_images,),end='')
+        print("\rValidating {}/{}",end='')
     
     class_data = np.array(class_data)
     bbx_data = np.array(bbx_data)
     loss_data = np.array(loss_data)
+
+    print("\rValidation | c loss: {} | c precision: {} | c recall: {} |  bbx loss: {} | bbx precision: {} | bbx recall: {}".format(\
+            loss_data[:,0].mean(),loss_data[:,1].mean(),class_data[:,0].mean(),class_data[:,1].mean(),bbx_data[:,0].mean(),bbx_data[:,1].mean()))
 
     #cls_loss,reg_loss,cls_pre,cls_rec,reg_pre,reg_rec
     return loss_data[:,0].mean(),loss_data[:,1].mean(), \
