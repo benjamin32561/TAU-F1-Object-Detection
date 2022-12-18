@@ -242,8 +242,8 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         bbx_data.append([Precision(n_bbx_tp,n_bbx_fp),Recall(n_bbx_fp,n_bbx_fn)])
         print(f"\rValidating {idx+1}/{n_images}",end='')
         
-        del img,clas,reg,anch,scores,annot
-        del bbx_preds,bbx_preds,class_pred
+        del img,clas,reg,anch,scores
+        del bbx_preds,class_pred,annot
     
     class_data = np.array(class_data)
     bbx_data = np.array(bbx_data)
