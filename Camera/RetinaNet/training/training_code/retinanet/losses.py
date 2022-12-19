@@ -252,6 +252,7 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         
         del img,clas,reg,anch,scores,class_loss
         del bbx_preds,class_pred,annot,reg_loss
+        torch.cuda.empty_cache()
     
     class_data = np.array(class_data)
     bbx_data = np.array(bbx_data)
