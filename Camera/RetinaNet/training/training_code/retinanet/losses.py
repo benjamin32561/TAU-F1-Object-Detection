@@ -118,7 +118,6 @@ class FocalLoss(nn.Module):
 
             tmp = torch.zeros(cls_loss.shape).to(DEVICE)
             cls_loss = torch.where(torch.ne(targets, -1.0), cls_loss, tmp)
-            del tmp
 
             classification_losses.append(cls_loss.sum()/torch.clamp(num_positive_anchors.float(), min=1.0))
 
@@ -154,8 +153,6 @@ class FocalLoss(nn.Module):
                 else:
                     targets = targets/torch.Tensor([[0.1, 0.1, 0.2, 0.2]])
 
-                negative_indices = 1 + (~positive_indices)
-
                 regression_diff = torch.abs(targets - regression[positive_indices, :])
 
                 regression_loss = torch.where(
@@ -164,19 +161,30 @@ class FocalLoss(nn.Module):
                     regression_diff - 0.5 / 9.0
                 )
                 regression_losses.append(regression_loss.mean())
+                del targets_dx,targets_dy,targets_dw,targets_dh
+                del regression_loss,regression_diff
+                del gt_widths,gt_heights,gt_ctr_x,gt_ctr_y
+                del assigned_annotations,anchor_widths_pi,anchor_heights_pi
+                del anchor_ctr_x_pi,anchor_ctr_y_pi
             else:
                 regression_losses.append(torch.tensor(0).float().to(DEVICE))
+            del tmp,cls_loss,num_positive_anchors
+            del classification,regression,bbox_annotation
 
-        return torch.stack(classification_losses).mean(dim=0, keepdim=True), torch.stack(regression_losses).mean(dim=0, keepdim=True)
+        del anchor_widths,anchor_heights,anchor_ctr_x,anchor_ctr_y
+        to_ret1 = torch.stack(classification_losses).mean(dim=0, keepdim=True)
+        to_ret2 = torch.stack(regression_losses).mean(dim=0, keepdim=True)
+        del classification_losses,regression_losses
+        return to_ret1, to_ret2
 
 
 def Recall(tp,fn):
-    return tp/(tp+fn)
+    return float(tp/(tp+fn))
 
 def Precision(tp,fp):
     if (tp+fp)==0:
-        return 0
-    return tp/(tp+fp)
+        return 0.0
+    return float(tp/(tp+fp))
 
 def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
     model.training = False
@@ -242,8 +250,8 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         bbx_data.append([Precision(n_bbx_tp,n_bbx_fp),Recall(n_bbx_fp,n_bbx_fn)])
         print(f"\rValidating {idx+1}/{n_images}",end='')
         
-        del img,clas,reg,anch,scores
-        del bbx_preds,class_pred,annot
+        del img,clas,reg,anch,scores,class_loss
+        del bbx_preds,class_pred,annot,reg_loss
     
     class_data = np.array(class_data)
     bbx_data = np.array(bbx_data)
