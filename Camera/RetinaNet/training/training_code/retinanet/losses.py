@@ -22,6 +22,7 @@ def calc_iou(a, b):
 
     IoU = intersection / ua
 
+    del area,intersection,ua,iw,ih
     return IoU
 
 class FocalLoss(nn.Module):
@@ -175,7 +176,7 @@ class FocalLoss(nn.Module):
         to_ret1 = torch.stack(classification_losses).mean(dim=0, keepdim=True)
         to_ret2 = torch.stack(regression_losses).mean(dim=0, keepdim=True)
         del classification_losses,regression_losses
-        return to_ret1, to_ret2
+        return float(to_ret1), float(to_ret2)
 
 
 def Recall(tp,fn):
@@ -199,9 +200,9 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         clas,reg,anch,scores,class_pred,bbx_preds = model(img)
         annot = data['annot'].to(DEVICE)
         
-        #class_loss, reg_loss = loss_fun(clas,reg,anch,annot)
+        class_loss, reg_loss = loss_fun(clas,reg,anch,annot)
 
-        #loss_data.append([class_loss, reg_loss])
+        loss_data.append([class_loss, reg_loss])
         n_pred_objects = class_pred.size()[0]
 
         annot = annot[0]
@@ -250,7 +251,7 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         bbx_data.append([Precision(n_bbx_tp,n_bbx_fp),Recall(n_bbx_fp,n_bbx_fn)])
         print(f"\rValidating {idx+1}/{n_images}",end='')
         
-        #del class_loss,reg_loss
+        del class_loss,reg_loss
         del img,clas,reg,anch,scores
         del bbx_preds,class_pred,annot
         torch.cuda.empty_cache()

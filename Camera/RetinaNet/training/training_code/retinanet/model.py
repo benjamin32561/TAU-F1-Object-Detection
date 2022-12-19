@@ -286,8 +286,8 @@ class ResNet(nn.Module):
             finalAnchorBoxesIndexes = torch.cat((finalAnchorBoxesIndexes, finalAnchorBoxesIndexesValue))
             finalAnchorBoxesCoordinates = torch.cat((finalAnchorBoxesCoordinates, anchorBoxes[anchors_nms_idx]))
 
-            del finalAnchorBoxesIndexesValue,scores_over_thresh,scores,anchorBoxes
-            del anchors_nms_idx,finalResult
+            del finalAnchorBoxesIndexesValue,scores_over_thresh,scores
+            del anchors_nms_idx,finalResult,anchorBoxes
         return finalScores, finalAnchorBoxesIndexes, finalAnchorBoxesCoordinates
 
 def resnet18(num_classes, pretrained=False, **kwargs):
