@@ -250,7 +250,7 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         bbx_data.append([Precision(n_bbx_tp,n_bbx_fp),Recall(n_bbx_fp,n_bbx_fn)])
         print(f"\rValidating {idx+1}/{n_images}",end='')
         
-        del class_loss,reg_loss
+        #del class_loss,reg_loss
         del img,clas,reg,anch,scores
         del bbx_preds,class_pred,annot
         torch.cuda.empty_cache()
