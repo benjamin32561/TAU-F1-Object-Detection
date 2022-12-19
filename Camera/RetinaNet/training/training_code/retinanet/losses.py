@@ -215,33 +215,34 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         n_class_fp = 0
         n_class_fn = 0
         if n_pred_objects>0:
-            #calculating class prediction fp,tp,fn
-            for i in range(n_objects):
-                bbx = bbx_label[i].repeat(n_pred_objects, 1)
-                iou = calc_iou(bbx,bbx_preds)
-                predicted_idx = iou>=IoU_thresh
-                predicted = iou[predicted_idx]
-                if predicted.size(0)==0:
-                    n_bbx_fn+=1 #iou with every prediction gives iou<thresh
-                    n_class_fn+=1 #failed to predict existing instance of class
-                    continue
-                bbx_class = class_label[i]
-                rel_pred_class = class_pred[predicted_idx]
-                n_current_class_tp=rel_pred_class[rel_pred_class==bbx_class].size(0)
-                n_class_tp+=n_current_class_tp #iou>=thresh and same class
-                del iou,bbx,predicted_idx,predicted,rel_pred_class
-            #calculating bbx prediction fp,tp,fn
-            for predicted_bbx in bbx_preds:
-                bbx = predicted_bbx.repeat(n_objects, 1)
-                iou = calc_iou(bbx,bbx_label)
-                rel_iou_idx = iou>=IoU_thresh
-                n_rel_iou = iou[rel_iou_idx].size(0)
-                if n_rel_iou==0:
-                    n_bbx_fp+=1
-                    n_class_fp+=1
-                else:
-                    n_bbx_tp+=1
-                del iou,bbx,rel_iou_idx
+            n_class_fn += 0
+            # #calculating class prediction fp,tp,fn
+            # for i in range(n_objects):
+            #     bbx = bbx_label[i].repeat(n_pred_objects, 1)
+            #     iou = calc_iou(bbx,bbx_preds)
+            #     predicted_idx = iou>=IoU_thresh
+            #     predicted = iou[predicted_idx]
+            #     if predicted.size(0)==0:
+            #         n_bbx_fn+=1 #iou with every prediction gives iou<thresh
+            #         n_class_fn+=1 #failed to predict existing instance of class
+            #         continue
+            #     bbx_class = class_label[i]
+            #     rel_pred_class = class_pred[predicted_idx]
+            #     n_current_class_tp=rel_pred_class[rel_pred_class==bbx_class].size(0)
+            #     n_class_tp+=n_current_class_tp #iou>=thresh and same class
+            #     del iou,bbx,predicted_idx,predicted,rel_pred_class
+            # #calculating bbx prediction fp,tp,fn
+            # for predicted_bbx in bbx_preds:
+            #     bbx = predicted_bbx.repeat(n_objects, 1)
+            #     iou = calc_iou(bbx,bbx_label)
+            #     rel_iou_idx = iou>=IoU_thresh
+            #     n_rel_iou = iou[rel_iou_idx].size(0)
+            #     if n_rel_iou==0:
+            #         n_bbx_fp+=1
+            #         n_class_fp+=1
+            #     else:
+            #         n_bbx_tp+=1
+            #     del iou,bbx,rel_iou_idx
         else:
             n_bbx_fn+=n_objects
             n_class_fn+=n_objects
