@@ -221,7 +221,7 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
                 rel_pred_class = class_pred[predicted_idx]
                 n_current_class_tp=rel_pred_class[rel_pred_class==bbx_class].size(0)
                 n_class_tp+=n_current_class_tp #iou>=thresh and same class
-                del iou,bbx
+                del iou,bbx,predicted_idx,predicted,rel_pred_class
             #calculating bbx prediction fp,tp,fn
             for predicted_bbx in bbx_preds:
                 bbx = predicted_bbx.repeat(n_objects, 1)
@@ -233,7 +233,7 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
                     n_class_fp+=1
                 else:
                     n_bbx_tp+=1
-                del iou,bbx
+                del iou,bbx,rel_iou_idx
         else:
             n_bbx_fn+=n_objects
             n_class_fn+=n_objects
