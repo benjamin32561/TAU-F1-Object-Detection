@@ -88,7 +88,7 @@ def main(args=None):
 
 
     base_model_path = join(parser.project_path,'base.pt')
-    torch.save(best_model,base_model_path)
+    torch.save(retinanet,base_model_path)
     best_model = -1
     best_loss = -1
     loss_func = FocalLoss()
