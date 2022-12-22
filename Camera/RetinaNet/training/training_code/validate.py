@@ -7,7 +7,7 @@ from torchvision import transforms
 from retinanet import model
 from retinanet.dataloader import CocoDataset, collater, Resizer, AspectRatioBasedSampler, Augmenter, Normalizer
 from torch.utils.data import DataLoader
-from retinanet.losses import ValidateModel
+from retinanet.losses import FocalLoss, ValidateModel
 
 assert torch.__version__.split('.')[0] == '1'
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -39,7 +39,8 @@ def main(args=None):
     retinanet.training = False
     retinanet.eval()
 
-    ValidateModel(retinanet,dataloader_val)
+    loss_func = FocalLoss()
+    ValidateModel(retinanet,dataloader_val,loss_func)
 
 if __name__ == '__main__':
     main()
