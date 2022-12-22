@@ -87,7 +87,7 @@ def main(args=None):
     print('Num training images: {}'.format(len(dataset_train)))
 
 
-    base_model_path = join(parser.project_path,'base.pt'.format(epoch_num))
+    base_model_path = join(parser.project_path,'base.pt')
     torch.save(best_model,base_model_path)
     best_model = -1
     best_loss = -1
@@ -178,7 +178,7 @@ def main(args=None):
         del epoch_reg_loss
 
     #saving epoch model
-    best_model_path = join(parser.project_path,'best.pt'.format(epoch_num))
+    best_model_path = join(parser.project_path,'best.pt')
     torch.save(best_model,best_model_path)
     final_model_path = join(parser.project_path,'last.pt')
     torch.save(retinanet, final_model_path)
