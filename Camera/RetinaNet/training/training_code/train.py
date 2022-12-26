@@ -33,8 +33,6 @@ def main(args=None):
 
     parser = parser.parse_args(args)
 
-    # Create the data loaders
-
     # wandb.init(
     #         project="RetinaNet",
     #         name=parser.wandb_run_name,
