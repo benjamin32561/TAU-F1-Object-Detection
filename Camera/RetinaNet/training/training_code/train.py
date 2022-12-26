@@ -102,7 +102,7 @@ def main(args=None):
             optimizer.zero_grad()
             
             img = data['img'].to(torch.float32).to(DEVICE)
-            clas,reg,anch,_,_,_ = retinanet(img)
+            clas,reg,anch = retinanet(img)
             annot = data['annot'].to(DEVICE)
             
             classification_loss, regression_loss = loss_func(clas,reg,anch,annot)
