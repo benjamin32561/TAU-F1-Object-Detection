@@ -109,6 +109,8 @@ def main(args=None):
             
             print(classification_loss)
             print(regression_loss)
+            classification_loss = classification_loss.mean()
+            regression_loss = regression_loss.mean()
             loss = classification_loss + regression_loss
 
             if bool(loss == 0):
