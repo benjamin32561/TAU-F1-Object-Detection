@@ -128,7 +128,6 @@ def main(args=None):
 
             print('\rEpoch: {} | Iteration: {}/{} | Classification loss: {:1.5f} | Regression loss: {:1.5f} | Running loss: {:1.5f}'
                 .format(epoch_num,iter_num,n_iterations,np.mean(epoch_class_loss),np.mean(epoch_reg_loss),np.mean(epoch_loss)), end='')
-            break
 
         scheduler.step(np.mean(epoch_loss))
 
