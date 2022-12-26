@@ -173,7 +173,7 @@ class FocalLoss(nn.Module):
             del classification,regression,bbox_annotation
 
         del anchor_widths,anchor_heights,anchor_ctr_x,anchor_ctr_y
-        print(torch.stack(classification_losses).shape)
+        
         to_ret1 = torch.stack(classification_losses).mean(dim=0, keepdim=True)
         to_ret2 = torch.stack(regression_losses).mean(dim=0, keepdim=True)
         del classification_losses,regression_losses

@@ -101,14 +101,12 @@ def main(args=None):
         for iter_num, data in enumerate(dataloader_train):
             optimizer.zero_grad()
             
-            img = data['img'].to(torch.float32).to(DEVICE)
-            clas,reg,anch = retinanet(img)
+            imgs = data['img'].to(torch.float32).to(DEVICE)
+            clas,reg,anch = retinanet(imgs)
             annot = data['annot'].to(DEVICE)
             
             classification_loss, regression_loss = loss_func(clas,reg,anch,annot)
             
-            print(classification_loss)
-            print(regression_loss)
             classification_loss = classification_loss.mean()
             regression_loss = regression_loss.mean()
             loss = classification_loss + regression_loss
@@ -124,7 +122,7 @@ def main(args=None):
             epoch_reg_loss.append(float(regression_loss))
             epoch_loss.append(float(loss))
 
-            del img_data
+            del imgs
             del classification_loss
             del regression_loss
 
