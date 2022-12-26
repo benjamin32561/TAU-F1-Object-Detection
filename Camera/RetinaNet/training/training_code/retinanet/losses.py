@@ -176,7 +176,7 @@ class FocalLoss(nn.Module):
         to_ret1 = torch.stack(classification_losses).mean(dim=0, keepdim=True)
         to_ret2 = torch.stack(regression_losses).mean(dim=0, keepdim=True)
         del classification_losses,regression_losses
-        return float(to_ret1), float(to_ret2)
+        return to_ret1, to_ret2
 
 
 def Recall(tp,fn):
