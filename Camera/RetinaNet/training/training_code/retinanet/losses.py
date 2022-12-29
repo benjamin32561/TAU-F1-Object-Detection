@@ -1,7 +1,6 @@
 import numpy as np
 import torch
 import torch.nn as nn
-import gc
 
 assert torch.__version__.split('.')[0] == '1'
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -230,12 +229,13 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
                 if predicted.size(0)==0:
                     n_bbx_fn+=1 #iou with every prediction gives iou<thresh
                     n_class_fn+=1 #failed to predict existing instance of class
+                    del iou,bbx,predicted_idx,predicted
                     continue
                 bbx_class = class_label[i]
                 rel_pred_class = class_pred[predicted_idx]
                 n_current_class_tp=rel_pred_class[rel_pred_class==bbx_class].size(0)
                 n_class_tp+=n_current_class_tp #iou>=thresh and same class
-                del iou,bbx,predicted_idx,predicted,rel_pred_class
+                del iou,bbx,predicted_idx,predicted,rel_pred_class,bbx_class
             #calculating bbx prediction fp,tp,fn
             for predicted_bbx in bbx_preds:
                 bbx = predicted_bbx.repeat(n_objects, 1)
@@ -259,8 +259,6 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         del img,clas,reg,anch,scores,class_pred,bbx_preds,annot
         del class_loss, reg_loss
         del single_annot,bbx_label,class_label
-        torch.cuda.empty_cache()
-        gc.collect()
     
     class_data = np.array(class_data)
     bbx_data = np.array(bbx_data)
