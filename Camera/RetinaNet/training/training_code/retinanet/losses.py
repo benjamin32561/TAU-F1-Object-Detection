@@ -207,7 +207,6 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         
         class_loss, reg_loss = loss_fun(clas,reg,anch,annot)
         
-        print(class_loss.item(), reg_loss.item())
         loss_data.append([class_loss.item(), reg_loss.item()])
         n_pred_objects = class_pred.size()[0]
         
