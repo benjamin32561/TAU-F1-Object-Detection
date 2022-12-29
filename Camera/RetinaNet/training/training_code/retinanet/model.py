@@ -248,11 +248,7 @@ class ResNet(nn.Module):
 
         anchors = self.anchors(img_batch)
         
-        if self.training:
-            return classification, regression, anchors
-        else:
-            scores, class_pred, bbx_preds = self.ModelOutToPrediction(classification, regression,anchors,img_batch)
-            return classification, regression, anchors, scores, class_pred, bbx_preds
+        return classification, regression, anchors
 
     def ModelOutToPrediction(self,classification,regression,anchors,img_batch):
         transformed_anchors = self.regressBoxes(anchors, regression)

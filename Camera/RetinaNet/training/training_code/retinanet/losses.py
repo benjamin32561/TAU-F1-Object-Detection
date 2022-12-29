@@ -198,7 +198,8 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
     bbx_data = []
     for idx, data in enumerate(dataloader):
         img = data['img'].to(torch.float32).to(DEVICE)
-        clas,reg,anch,scores,class_pred,bbx_preds = model(img)
+        clas,reg,anch = model(img)
+        scores,class_pred,bbx_preds = model.ModelOutToPrediction(clas,reg,anch,img)
         annot = data['annot'].to(DEVICE)
         
         class_loss, reg_loss = loss_fun(clas,reg,anch,annot)
