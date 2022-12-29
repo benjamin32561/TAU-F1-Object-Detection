@@ -29,7 +29,7 @@ def main(args=None):
                                 transform=transforms.Compose([Normalizer(), Resizer()]))
     
     sampler_val = AspectRatioBasedSampler(dataset_val, batch_size=1, drop_last=False)
-    dataloader_val = DataLoader(dataset_val, num_workers=1, collate_fn=collater, batch_sampler=sampler_val)
+    dataloader_val = DataLoader(dataset_val, num_workers=1, collate_fn=collater, batch_sampler=sampler_val,shuffle=False)
 
     # Create the model
     retinanet = torch.load(parser.model_path)
