@@ -190,6 +190,12 @@ def Precision(tp,fp):
         return 0.0
     return float(tp/(tp+fp))
 
+def PrintMem():
+    r = torch.cuda.memory_reserved(0)
+    a = torch.cuda.memory_allocated(0)
+    f = r-a  # free inside reserved
+    print(f"free mm: {f}")
+
 def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
     model.training = False
     model.eval()
@@ -199,6 +205,7 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
     class_data = []
     bbx_data = []
     for idx, data in enumerate(dataloader):
+        PrintMem()
         img = data['img'].to(torch.float32).to(DEVICE)
         
         clas,reg,anch,scores,class_pred,bbx_preds = model(img)
@@ -259,6 +266,8 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         del img,clas,reg,anch,scores,class_pred,bbx_preds,annot
         del class_loss, reg_loss
         del single_annot,bbx_label,class_label
+        PrintMem()
+        break
     
     class_data = np.array(class_data)
     bbx_data = np.array(bbx_data)
