@@ -268,7 +268,6 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         del single_annot,bbx_label,class_label
         del data
         PrintMem()
-        break
     
     class_data = np.array(class_data)
     bbx_data = np.array(bbx_data)
