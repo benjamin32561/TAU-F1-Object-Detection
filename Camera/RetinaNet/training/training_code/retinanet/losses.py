@@ -200,15 +200,15 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
     bbx_data = []
     for idx, data in enumerate(dataloader):
         img = data['img'].to(torch.float32).to(DEVICE)
-        print(type(img))
+        
         clas,reg,anch,scores,class_pred,bbx_preds = model(img)
         annot = data['annot'].to(DEVICE)
         
         class_loss, reg_loss = loss_fun(clas,reg,anch,annot)
-
+        
         loss_data.append([float(class_loss), float(reg_loss)])
         n_pred_objects = class_pred.size()[0]
-
+        print(n_pred_objects)
         annot = annot[0]
         bbx_label = annot[:,:-1]
         class_label = annot[:,-1]
@@ -255,9 +255,8 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         bbx_data.append([Precision(n_bbx_tp,n_bbx_fp),Recall(n_bbx_fp,n_bbx_fn)])
         print(f"\rValidating {idx+1}/{n_images}",end='')
         
-        del class_loss,reg_loss
-        del img,clas,reg,anch,scores
-        del bbx_preds,class_pred,annot
+        del img,clas,reg,anch,scores,class_pred,bbx_preds,annot
+        del class_loss, reg_loss
     
     class_data = np.array(class_data)
     bbx_data = np.array(bbx_data)
