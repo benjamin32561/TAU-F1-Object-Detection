@@ -12,10 +12,10 @@ def main():
     cam = sl.Camera()
     if not cam.is_opened():
         print("Opening ZED Camera...")
-    status = cam.open(init)
-    if status != sl.ERROR_CODE.SUCCESS:
-        print(repr(status))
-        exit()
+        status = cam.open(init)
+        if status != sl.ERROR_CODE.SUCCESS:
+            print(repr(status))
+            exit()
 
     runtime = sl.RuntimeParameters()
     mat = sl.Mat()
