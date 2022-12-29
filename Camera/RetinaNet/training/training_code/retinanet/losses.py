@@ -200,6 +200,7 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
     bbx_data = []
     for idx, data in enumerate(dataloader):
         img = data['img'].to(torch.float32).to(DEVICE)
+        print(type(img))
         clas,reg,anch,scores,class_pred,bbx_preds = model(img)
         annot = data['annot'].to(DEVICE)
         
