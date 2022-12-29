@@ -91,8 +91,8 @@ def main(args=None):
     best_loss = -1
     loss_func = FocalLoss()
     for epoch_num in range(parser.start_from_epoch,parser.epochs): 
-        retinanet.training = True
-        retinanet.train()
+        retinanet.training = False
+        retinanet.eval()
         retinanet.module.freeze_bn() #setting BN layers to eval()
         epoch_loss = []
         epoch_class_loss = []
@@ -102,7 +102,7 @@ def main(args=None):
             optimizer.zero_grad()
             
             imgs = data['img'].to(torch.float32).to(DEVICE)
-            clas,reg,anch = retinanet(imgs)
+            clas,reg,anch,_,_,_ = retinanet(imgs)
             annot = data['annot'].to(DEVICE)
             
             classification_loss, regression_loss = loss_func(clas,reg,anch,annot)
