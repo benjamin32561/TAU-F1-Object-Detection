@@ -205,9 +205,7 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         
         class_loss, reg_loss = loss_fun(clas,reg,anch,annot)
 
-        print(float(class_loss), reg_loss)
-
-        loss_data.append([class_loss, reg_loss])
+        loss_data.append([float(class_loss), float(reg_loss)])
         n_pred_objects = class_pred.size()[0]
 
         annot = annot[0]
@@ -259,6 +257,7 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         del class_loss,reg_loss
         del img,clas,reg,anch,scores
         del bbx_preds,class_pred,annot
+        del class_loss, reg_loss
     
     class_data = np.array(class_data)
     bbx_data = np.array(bbx_data)
