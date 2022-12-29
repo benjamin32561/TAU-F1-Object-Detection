@@ -190,19 +190,6 @@ def Precision(tp,fp):
         return 0.0
     return float(tp/(tp+fp))
 
-import nvidia_smi
-
-def PrintGPUMem():
-    nvidia_smi.nvmlInit()
-
-    deviceCount = nvidia_smi.nvmlDeviceGetCount()
-    for i in range(deviceCount):
-        handle = nvidia_smi.nvmlDeviceGetHandleByIndex(i)
-        info = nvidia_smi.nvmlDeviceGetMemoryInfo(handle)
-        print("Device {}: {}, Memory : ({:.2f}% free): {}(total), {} (free), {} (used)".format(i, nvidia_smi.nvmlDeviceGetName(handle), 100*info.free/info.total, info.total, info.free, info.used))
-
-    nvidia_smi.nvmlShutdown()
-
 def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
     model.training = False
     model.eval()
@@ -211,8 +198,8 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
     loss_data = []
     class_data = []
     bbx_data = []
-    PrintGPUMem()
     for idx, data in enumerate(dataloader):
+        print(f"\rValidating {idx+1}/{n_images}",end='\n')
         img = data['img'].to(torch.float32).to(DEVICE)
         
         clas,reg,anch,scores,class_pred,bbx_preds = model(img)
@@ -268,14 +255,12 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         
         class_data.append([Precision(n_class_tp,n_class_fp),Recall(n_class_fp,n_class_fn)])
         bbx_data.append([Precision(n_bbx_tp,n_bbx_fp),Recall(n_bbx_fp,n_bbx_fn)])
-        print(f"\rValidating {idx+1}/{n_images}",end='')
         
         del img,clas,reg,anch,scores,class_pred,bbx_preds,annot
         del class_loss, reg_loss
         del single_annot,bbx_label,class_label
         del data
         torch.cuda.empty_cache()
-        PrintGPUMem()
     
     class_data = np.array(class_data)
     bbx_data = np.array(bbx_data)
