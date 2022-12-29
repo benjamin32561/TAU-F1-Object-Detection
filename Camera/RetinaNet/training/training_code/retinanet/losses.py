@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 import torch.nn as nn
+import gc
 
 assert torch.__version__.split('.')[0] == '1'
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -206,7 +207,8 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         
         class_loss, reg_loss = loss_fun(clas,reg,anch,annot)
         
-        loss_data.append([float(class_loss), float(reg_loss)])
+        print(class_loss.item(), reg_loss.item())
+        loss_data.append([class_loss.item(), reg_loss.item()])
         n_pred_objects = class_pred.size()[0]
         
         single_annot = annot[0]
@@ -258,7 +260,8 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         del img,clas,reg,anch,scores,class_pred,bbx_preds,annot
         del class_loss, reg_loss
         del single_annot,bbx_label,class_label
-        torch.cuda.empty()
+        torch.cuda.empty_cache()
+        gc.collect()
     
     class_data = np.array(class_data)
     bbx_data = np.array(bbx_data)
