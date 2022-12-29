@@ -181,6 +181,8 @@ class FocalLoss(nn.Module):
 
 
 def Recall(tp,fn):
+    if (tp+fn)==0:
+        return 0.0
     return float(tp/(tp+fn))
 
 def Precision(tp,fp):
