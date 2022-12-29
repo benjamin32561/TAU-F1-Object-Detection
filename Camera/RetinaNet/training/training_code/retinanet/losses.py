@@ -261,7 +261,7 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         
         class_data.append([Precision(n_class_tp,n_class_fp),Recall(n_class_fp,n_class_fn)])
         bbx_data.append([Precision(n_bbx_tp,n_bbx_fp),Recall(n_bbx_fp,n_bbx_fn)])
-        print(f"\rValidating {idx+1}/{n_images}",end='')
+        #print(f"\rValidating {idx+1}/{n_images}",end='')
         
         del img,clas,reg,anch,scores,class_pred,bbx_preds,annot
         del class_loss, reg_loss
