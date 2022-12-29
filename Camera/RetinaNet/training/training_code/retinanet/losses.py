@@ -208,10 +208,10 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         
         loss_data.append([float(class_loss), float(reg_loss)])
         n_pred_objects = class_pred.size()[0]
-        print(n_pred_objects)
-        annot = annot[0]
-        bbx_label = annot[:,:-1]
-        class_label = annot[:,-1]
+        
+        single_annot = annot[0]
+        bbx_label = single_annot[:,:-1]
+        class_label = single_annot[:,-1]
         n_objects = bbx_label.size()[0]
         n_bbx_tp = 0
         n_bbx_fp = 0
@@ -257,6 +257,7 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         
         del img,clas,reg,anch,scores,class_pred,bbx_preds,annot
         del class_loss, reg_loss
+        del annot,single_annot,bbx_label,class_label
     
     class_data = np.array(class_data)
     bbx_data = np.array(bbx_data)
