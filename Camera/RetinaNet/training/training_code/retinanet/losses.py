@@ -205,7 +205,7 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         
         class_loss, reg_loss = loss_fun(clas,reg,anch,annot)
 
-        print(class_loss, reg_loss)
+        print(float(class_loss), reg_loss)
 
         loss_data.append([class_loss, reg_loss])
         n_pred_objects = class_pred.size()[0]
@@ -252,8 +252,6 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
             n_bbx_fn+=n_objects
             n_class_fn+=n_objects
         
-        print(Precision(n_class_tp,n_class_fp),Recall(n_class_fp,n_class_fn))
-        print(Precision(n_bbx_tp,n_bbx_fp),Recall(n_bbx_fp,n_bbx_fn))
         class_data.append([Precision(n_class_tp,n_class_fp),Recall(n_class_fp,n_class_fn)])
         bbx_data.append([Precision(n_bbx_tp,n_bbx_fp),Recall(n_bbx_fp,n_bbx_fn)])
         print(f"\rValidating {idx+1}/{n_images}",end='')
