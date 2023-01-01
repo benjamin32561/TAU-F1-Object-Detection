@@ -202,7 +202,7 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         print(f"\rValidating {idx+1}/{n_images}",end='')
         img = data['img'].to(torch.float32).to(DEVICE)
         
-        # clas,reg,anch,scores,class_pred,bbx_preds = model(img)
+        clas,reg,anch,scores,class_pred,bbx_preds = model(img)
         # annot = data['annot'].to(DEVICE)
         
         # class_loss, reg_loss = loss_fun(clas,reg,anch,annot)
