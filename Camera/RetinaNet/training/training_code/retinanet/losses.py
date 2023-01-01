@@ -202,12 +202,8 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         print(f"\rValidating {idx+1}/{n_images}",end='')
         img = data['img'].to(torch.float32).to(DEVICE)
         
-        try:
-            with torch.no_grad():
-                clas,reg,anch,scores,class_pred,bbx_preds = model(img)
-        except Exception as e:
-            print('\n',e)
-            continue
+        with torch.no_grad():
+            clas,reg,anch,scores,class_pred,bbx_preds = model(img)
         
         annot = data['annot'].to(DEVICE)
         

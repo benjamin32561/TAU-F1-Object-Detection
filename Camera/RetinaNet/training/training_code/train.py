@@ -126,24 +126,6 @@ def main(args=None):
         scheduler.step(np.mean(epoch_loss))
 
         print('\nValidating model')
-        # classification_val_loss = []
-        # regression_val_loss = []
-        # for iter_num, data in enumerate(dataloader_val):
-        #     optimizer.zero_grad()
-
-        #     img_data = data['img'].to(torch.float32).to(DEVICE)
-        #     classification_loss, regression_loss = retinanet([img_data, data['annot']])
-                
-        #     classification_loss = classification_loss.mean()
-        #     regression_loss = regression_loss.mean()
-            
-        #     classification_val_loss.append(float(classification_loss))
-        #     regression_val_loss.append(float(regression_loss))
-        #     del img_data
-        #     del classification_loss
-        #     del regression_loss
-        #val_loss_sum = np.mean(regression_val_loss)+np.mean(classification_val_loss)
-        
         retinanet.training = False
         retinanet.eval()
         val_cls_loss,val_reg_loss,val_cls_pre,val_cls_rec,val_reg_pre,val_reg_rec = ValidateModel(retinanet,dataloader_val,loss_func)
@@ -155,18 +137,18 @@ def main(args=None):
             best_loss = val_reg_loss+val_cls_loss
             best_model = deepcopy(retinanet)
         print("Saving epoch data to wandb...\n")
-        # wandb.log({
-        #     "train loss":np.mean(epoch_loss),
-        #     "train classification_loss":np.mean(epoch_class_loss),
-        #     "train regression_loss":np.mean(epoch_reg_loss),
-        #     "validation loss":val_reg_loss+val_cls_loss,
-        #     "validation classification loss":val_cls_loss,
-        #     "validation regression loss":val_reg_loss,
-        #     "validation classification precision":val_cls_pre,
-        #     "validation regression precision":val_reg_pre,
-        #     "validation classification recall":val_cls_rec,
-        #     "validation regression recall":val_reg_rec},
-        #     step=epoch_num, commit=True)
+        wandb.log({
+            "train loss":np.mean(epoch_loss),
+            "train classification_loss":np.mean(epoch_class_loss),
+            "train regression_loss":np.mean(epoch_reg_loss),
+            "validation loss":val_reg_loss+val_cls_loss,
+            "validation classification loss":val_cls_loss,
+            "validation regression loss":val_reg_loss,
+            "validation classification precision":val_cls_pre,
+            "validation regression precision":val_reg_pre,
+            "validation classification recall":val_cls_rec,
+            "validation regression recall":val_reg_rec},
+            step=epoch_num, commit=True)
         
         del epoch_loss
         del epoch_class_loss
