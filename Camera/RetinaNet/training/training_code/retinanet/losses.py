@@ -203,7 +203,8 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         img = data['img'].to(torch.float32).to(DEVICE)
         
         try:
-            clas,reg,anch,scores,class_pred,bbx_preds = model(img)
+            with torch.no_grad():
+                clas,reg,anch,scores,class_pred,bbx_preds = model(img)
         except Exception as e:
             print('\n',e)
             continue
