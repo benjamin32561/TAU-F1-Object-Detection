@@ -237,10 +237,10 @@ class ResNet(nn.Module):
 
         x1 = self.layer1(x)
         x2 = self.layer2(x1)
+        print("good")
         x3 = self.layer3(x2)
         x4 = self.layer4(x3)
 
-        print("good")
         features = self.fpn([x2, x3, x4])
 
         regression = torch.cat([self.regressionModel(feature) for feature in features], dim=1)
