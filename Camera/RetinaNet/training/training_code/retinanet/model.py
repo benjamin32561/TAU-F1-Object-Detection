@@ -258,13 +258,9 @@ class ResNet(nn.Module):
         transformed_anchors = self.regressBoxes(anchors, regression)
         transformed_anchors = self.clipBoxes(transformed_anchors, img_batch)
 
-        finalResult = [[], [], []]
-
         finalScores = torch.Tensor([]).to(DEVICE)
         finalAnchorBoxesIndexes = torch.Tensor([]).long().to(DEVICE)
         finalAnchorBoxesCoordinates = torch.Tensor([]).to(DEVICE)
-        print("good1")
-        print(classification.shape[2])
         for i in range(classification.shape[2]):
             scores = torch.squeeze(classification[:, :, i])
             scores_over_thresh = (scores >= 0.05)
@@ -277,10 +273,6 @@ class ResNet(nn.Module):
             anchorBoxes = anchorBoxes[scores_over_thresh]
             anchors_nms_idx = nms(anchorBoxes, scores, 0.5)
 
-            finalResult[0].extend(scores[anchors_nms_idx])
-            finalResult[1].extend(torch.tensor([i] * anchors_nms_idx.shape[0]))
-            finalResult[2].extend(anchorBoxes[anchors_nms_idx])
-
             finalScores = torch.cat((finalScores, scores[anchors_nms_idx]))
             finalAnchorBoxesIndexesValue = torch.tensor([i] * anchors_nms_idx.shape[0]).to(DEVICE)
 
@@ -289,8 +281,6 @@ class ResNet(nn.Module):
 
             del scores_over_thresh,scores
             del anchors_nms_idx,anchorBoxes
-        del finalResult
-        print("good2")
         return finalScores, finalAnchorBoxesIndexes, finalAnchorBoxesCoordinates
 
 def resnet18(num_classes, pretrained=False, **kwargs):
