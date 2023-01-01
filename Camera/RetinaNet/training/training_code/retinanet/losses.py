@@ -205,7 +205,8 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
         try:
             clas,reg,anch,scores,class_pred,bbx_preds = model(img)
         except Exception as e:
-            print(e)
+            print('\n',e)
+            continue
         
         annot = data['annot'].to(DEVICE)
         
