@@ -255,6 +255,7 @@ class ResNet(nn.Module):
             return classification, regression, anchors, scores, class_pred, bbx_preds
 
     def ModelOutToPrediction(self,classification,regression,anchors,img_batch):
+        print("good")
         transformed_anchors = self.regressBoxes(anchors, regression)
         transformed_anchors = self.clipBoxes(transformed_anchors, img_batch)
 
