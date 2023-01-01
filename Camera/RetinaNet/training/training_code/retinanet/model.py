@@ -265,7 +265,7 @@ class ResNet(nn.Module):
             scores = torch.squeeze(classification[:, :, i])
             scores_over_thresh = (scores >= 0.05)
             if scores_over_thresh.sum() == 0:
-                # no boxes to NMS, just continue
+                del scores,scores_over_thresh
                 continue
 
             scores = scores[scores_over_thresh]
