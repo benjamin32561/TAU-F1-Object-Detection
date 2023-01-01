@@ -235,6 +235,7 @@ class ResNet(nn.Module):
         x = self.relu(x)
         x = self.maxpool(x)
 
+        print("good")
         x1 = self.layer1(x)
         x2 = self.layer2(x1)
         x3 = self.layer3(x2)
@@ -255,7 +256,6 @@ class ResNet(nn.Module):
             return classification, regression, anchors, scores, class_pred, bbx_preds
 
     def ModelOutToPrediction(self,classification,regression,anchors,img_batch):
-        print("good")
         transformed_anchors = self.regressBoxes(anchors, regression)
         transformed_anchors = self.clipBoxes(transformed_anchors, img_batch)
 
