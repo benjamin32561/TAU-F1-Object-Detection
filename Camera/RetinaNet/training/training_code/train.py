@@ -123,7 +123,7 @@ def main(args=None):
             # epoch_reg_loss.append(float(regression_loss))
             # epoch_loss.append(float(loss))
 
-            del imgs,classification_loss,regression_loss
+            # del imgs,classification_loss,regression_loss
 
             print('\rEpoch: {} | Iteration: {}/{} | Classification loss: {:1.5f} | Regression loss: {:1.5f} | Running loss: {:1.5f}'
                 .format(epoch_num,iter_num,n_iterations,np.mean(epoch_class_loss),np.mean(epoch_reg_loss),np.mean(epoch_loss)), end='')
