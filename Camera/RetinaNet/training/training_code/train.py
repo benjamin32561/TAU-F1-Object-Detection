@@ -91,8 +91,8 @@ def main(args=None):
     best_loss = -1
     loss_func = FocalLoss()
     for epoch_num in range(parser.start_from_epoch,parser.epochs): 
-        retinanet.training = False
-        retinanet.eval()
+        retinanet.training = True
+        retinanet.train()
         retinanet.module.freeze_bn() #setting BN layers to eval()
         epoch_loss = []
         epoch_class_loss = []
@@ -102,28 +102,28 @@ def main(args=None):
             optimizer.zero_grad()
             
             imgs = data['img'].to(torch.float32).to(DEVICE)
-            clas,reg,anch,a,b,c = retinanet(imgs)
-            # annot = data['annot'].to(DEVICE)
+            clas,reg,anch = retinanet(imgs)
+            annot = data['annot'].to(DEVICE)
             
-            # classification_loss, regression_loss = loss_func(clas,reg,anch,annot)
+            classification_loss, regression_loss = loss_func(clas,reg,anch,annot)
             
-            # classification_loss = classification_loss.mean()
-            # regression_loss = regression_loss.mean()
-            # loss = classification_loss + regression_loss
+            classification_loss = classification_loss.mean()
+            regression_loss = regression_loss.mean()
+            loss = classification_loss + regression_loss
 
-            # if bool(loss == 0):
-            #     del imgs,classification_loss,regression_loss
-            #     continue
+            if bool(loss == 0):
+                del imgs,classification_loss,regression_loss
+                continue
 
-            # loss.backward()
-            # torch.nn.utils.clip_grad_norm_(retinanet.parameters(), 0.1)
-            # optimizer.step()
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(retinanet.parameters(), 0.1)
+            optimizer.step()
 
-            # epoch_class_loss.append(float(classification_loss))
-            # epoch_reg_loss.append(float(regression_loss))
-            # epoch_loss.append(float(loss))
+            epoch_class_loss.append(float(classification_loss))
+            epoch_reg_loss.append(float(regression_loss))
+            epoch_loss.append(float(loss))
 
-            # del imgs,classification_loss,regression_loss
+            del imgs,classification_loss,regression_loss
 
             print('\rEpoch: {} | Iteration: {}/{} | Classification loss: {:1.5f} | Regression loss: {:1.5f} | Running loss: {:1.5f}'
                 .format(epoch_num,iter_num,n_iterations,np.mean(epoch_class_loss),np.mean(epoch_reg_loss),np.mean(epoch_loss)), end='')
