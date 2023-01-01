@@ -83,7 +83,7 @@ def main(args=None):
     base_model_path = join(parser.project_path,'base.pt')
     torch.save(retinanet,base_model_path)
     best_model = -1
-    best_loss = -1
+    best_val_metrics = -1
     loss_func = FocalLoss()
     for epoch_num in range(parser.start_from_epoch,parser.epochs): 
         retinanet.training = True
@@ -133,8 +133,11 @@ def main(args=None):
         print('Validation loss | Classification loss: {:1.5f} | Regression loss: {:1.5f} | Running loss: {:1.5f}'.format(
                 val_cls_loss, val_reg_loss, val_reg_loss+val_cls_loss))
 
-        if best_loss==-1 or best_loss>val_reg_loss+val_cls_loss:
-            best_loss = val_reg_loss+val_cls_loss
+        val_reg_met = np.mean([val_reg_pre,val_reg_rec])
+        val_cls_met = np.mean([val_cls_pre,val_cls_rec])
+        val_met = np.mean([val_reg_met,val_cls_met])
+        if best_val_metrics==-1 or best_val_metrics<=val_met:
+            best_val_metrics = val_met
             best_model = deepcopy(retinanet)
         print("Saving epoch data to wandb...\n")
         wandb.log({
