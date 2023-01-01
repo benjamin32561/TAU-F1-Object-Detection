@@ -236,8 +236,7 @@ class ResNet(nn.Module):
         x = self.maxpool(x)
 
         x1 = self.layer1(x)
-        print("good")
-        x2 = self.layer2(x1)
+        x2 = self.layer2(x1) #out of mem
         x3 = self.layer3(x2)
         x4 = self.layer4(x3)
 
