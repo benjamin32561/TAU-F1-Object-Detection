@@ -33,10 +33,10 @@ def main(args=None):
 
     parser = parser.parse_args(args)
 
-    # wandb.init(
-    #         project="RetinaNet",
-    #         name=parser.wandb_run_name,
-    #         resume="allow")
+    wandb.init(
+            project="RetinaNet",
+            name=parser.wandb_run_name,
+            resume="allow")
 
     if parser.coco_path is None:
         raise ValueError('Must provide --coco_path when training on COCO,')
