@@ -95,6 +95,7 @@ def main(args=None):
         epoch_reg_loss = []
         n_iterations = len(dataloader_train)
         for iter_num, data in enumerate(dataloader_train):
+            break
             optimizer.zero_grad()
             
             imgs = data['img'].to(torch.float32).to(DEVICE)
