@@ -17,6 +17,7 @@ def main(args=None):
 
     parser.add_argument('--coco_path', help='Path to COCO directory')
     parser.add_argument('--model_path', help='Path to model weights')
+    parser.add_argument('--batch_size', help='test batch size',type=int, default=4)
 
     parser = parser.parse_args(args)
 
@@ -28,7 +29,7 @@ def main(args=None):
     dataset_val = CocoDataset(parser.coco_path, set_name='val2017',
                                 transform=transforms.Compose([Normalizer(), Resizer()]))
     
-    sampler_val = AspectRatioBasedSampler(dataset_val, batch_size=1, drop_last=False)
+    sampler_val = AspectRatioBasedSampler(dataset_val, batch_size=parser.batch_size, drop_last=False)
     dataloader_val = DataLoader(dataset_val, num_workers=1, collate_fn=collater, batch_sampler=sampler_val,shuffle=False)
 
     # Create the model
