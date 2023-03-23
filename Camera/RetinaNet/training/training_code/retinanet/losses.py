@@ -269,7 +269,7 @@ def ValidateModel(model,dataloader,loss_fun,IoU_thresh=0.5):
     loss_data = np.array(loss_data)
 
     print("\rValidation | c loss: {} | c precision: {} | c recall: {} |  bbx loss: {} | bbx precision: {} | bbx recall: {}".format(\
-            loss_data[:,0].mean(),loss_data[:,1].mean(),class_data[:,0].mean(),class_data[:,1].mean(),bbx_data[:,0].mean(),bbx_data[:,1].mean()))
+            loss_data[:,0].mean(),class_data[:,0].mean(),class_data[:,1].loss_data[:,1].mean(),mean(),bbx_data[:,0].mean(),bbx_data[:,1].mean()))
 
     #cls_loss,reg_loss,cls_pre,cls_rec,reg_pre,reg_rec
     return loss_data[:,0].mean(),loss_data[:,1].mean(), \
