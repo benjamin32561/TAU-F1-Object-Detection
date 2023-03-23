@@ -123,7 +123,6 @@ def main(args=None):
 
             print('\rEpoch: {} | Iteration: {}/{} | Classification loss: {:1.5f} | Regression loss: {:1.5f} | Running loss: {:1.5f}'
                 .format(epoch_num,iter_num,n_iterations,np.mean(epoch_class_loss),np.mean(epoch_reg_loss),np.mean(epoch_loss)), end='')
-            break
 
         scheduler.step(np.mean(epoch_loss))
 
@@ -131,9 +130,6 @@ def main(args=None):
         retinanet.training = False
         retinanet.eval()
         val_cls_loss,val_reg_loss,val_cls_pre,val_cls_rec,val_reg_pre,val_reg_rec = ValidateModel(retinanet,dataloader_val,loss_func)
-
-        print('Validation loss | Classification loss: {:1.5f} | Regression loss: {:1.5f} | Running loss: {:1.5f}'.format(
-                val_cls_loss, val_reg_loss, val_reg_loss+val_cls_loss))
 
         val_reg_met = np.mean([val_reg_pre,val_reg_rec])
         val_cls_met = np.mean([val_cls_pre,val_cls_rec])
