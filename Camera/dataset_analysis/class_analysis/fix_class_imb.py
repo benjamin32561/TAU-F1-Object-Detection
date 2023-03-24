@@ -6,11 +6,20 @@ sys.path.append(os.path.abspath('../../'))
 import matplotlib.pyplot as plt
 import common.functions as cf
 from loguru import logger
+import argparse
 from common.consts import IMAGES_SUB_FOLDER, LABELS_SUB_FOLDER, \
                         SRC_PATH, OBJECTS, CLASS_TITLE, ID
 from common.functions import GetBbxArea, GetImgHWFromJson
 
 def main():
+    parser = argparse.ArgumentParser(description='My script')
+
+    # add a --save_at argument to the parser
+    parser.add_argument('--save_at', type=str, default='/content/', help='folder path to save graphs at')
+
+    # parse the command-line arguments
+    args = parser.parse_args()
+
     #getting sub folder data
     folders, _ = cf.GetSubFolders(SRC_PATH)
     n_folder = 1
@@ -53,17 +62,14 @@ def main():
     print(class_type_cnt)# create a barplot using Seaborn
     sns.set(style="whitegrid")
     ax = sns.barplot(x=list(class_type_cnt.keys()), y=list(class_type_cnt.values()))
-
     # set the labels and title
     ax.set(xlabel='Class Names', ylabel='Number of Objects', title='Class Object Count')
-
     # display the graph
-    plt.show()
-    min_cass_am = list(class_type_cnt.keys())[np.argmin(list(class_type_cnt.values()))]
-    print(min_cass_am)
+    plt.savefig(os.path.join(args.save_at, "before.png"))
 
+    min_cass_am = list(class_type_cnt.keys())[np.argmin(list(class_type_cnt.values()))]
     
-    print("Class Distrebution after clean: ")
+    print("\nClass Distrebution after clean: ")
     
 
 if __name__ == '__main__':
