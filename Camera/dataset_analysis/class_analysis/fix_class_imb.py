@@ -45,6 +45,7 @@ def main():
             for bbx in img_json_data[OBJECTS]:
                 if bbx[CLASS_TITLE] not in class_type_cnt.keys():
                     class_type_cnt[bbx[CLASS_TITLE]] = 1
+                    bbx_data[bbx[CLASS_TITLE]] = []
                 else:
                     class_type_cnt[bbx[CLASS_TITLE]]+=1
                 
@@ -54,8 +55,7 @@ def main():
                 w,h = GetImgHWFromJson(img_json_data)
                 current_bbx_data["rel_area"] = bbx_area/(w*h)
                 current_bbx_data[ID] = bbx[ID]
-                current_bbx_data[CLASS_TITLE] = bbx[CLASS_TITLE]
-                bbx_data.append(current_bbx_data)
+                bbx_data[bbx[CLASS_TITLE]].append(current_bbx_data)
 
     print("Class Distrebution before clean: ")
 
@@ -68,6 +68,7 @@ def main():
     plt.savefig(os.path.join(args.save_at, "before.png"))
 
     min_cass_am = list(class_type_cnt.keys())[np.argmin(list(class_type_cnt.values()))]
+    print(min_cass_am)
     
     print("\nClass Distrebution after clean: ")
     
