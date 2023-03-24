@@ -1,6 +1,6 @@
 import sys
 import os
-import sns
+import seaborn as sns
 sys.path.append(os.path.abspath('../../'))
 import matplotlib.pyplot as plt
 import common.functions as cf
