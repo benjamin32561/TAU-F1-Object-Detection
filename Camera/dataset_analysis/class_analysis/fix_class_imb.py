@@ -44,7 +44,7 @@ def main():
                 bbx_area = GetBbxArea(bbx)
                 w,h = GetImgHWFromJson(img_json_data)
                 current_bbx_data["rel_area"] = bbx_area/(w*h)
-                current_bbx_data[ID] = img_json_data[ID]
+                current_bbx_data[ID] = bbx[ID]
                 bbx_data.append(current_bbx_data)
 
     print("Class Distrebution before clean: ")
