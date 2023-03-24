@@ -14,6 +14,7 @@ EXT = "exterior"
 SIZE = "size"
 WIDTH = "width"
 HEIGHT = "height"
+ID = "id"
 
 IMG_EXTEN = ".jpg"
 
