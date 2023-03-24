@@ -25,7 +25,7 @@ def main():
     n_folder = 1
 
     class_type_cnt = {}
-    bbx_data = []
+    bbx_data = {}
     for src_sub_path in folders: #iterating through sub folders
         n_folder+=1
 
