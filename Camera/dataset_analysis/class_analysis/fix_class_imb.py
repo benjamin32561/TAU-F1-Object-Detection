@@ -14,7 +14,6 @@ def main():
 
     class_type_cnt = {}
     for src_sub_path in folders: #iterating through sub folders
-        logger.info("{0}/{1} folders".format(n_folder,n_folders))
         n_folder+=1
 
         #image and lable sorce folders
@@ -26,9 +25,6 @@ def main():
 
         ten_per = nof//10
         for img_idx, original_filename in enumerate(files): #iterating through images in sub folder
-            #print progress
-            if img_idx%ten_per==0:
-                logger.info("{0}/{1}".format(img_idx,nof))
 
             #load image data json file
             json_file_path = os.path.join(src_labels, original_filename+".json")
@@ -39,6 +35,8 @@ def main():
                     class_type_cnt[bbx[CLASS_TITLE]] = 1
                 else:
                     class_type_cnt[bbx[CLASS_TITLE]]+=1
+    print("Class Distrebution before clean: ")
+
     print(class_type_cnt)
     plt.bar(class_type_cnt.keys(),class_type_cnt.values(),color=(0.2, 0.4, 0.6, 0.6))
 
@@ -46,6 +44,9 @@ def main():
 
     # Show graph
     plt.show()
+
+    
+    print("Class Distrebution after clean: ")
     
 
 if __name__ == '__main__':

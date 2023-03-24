@@ -34,6 +34,12 @@ def main():
             #print progress
             if img_idx%ten_per==0:
                 logger.info("{0}/{1}".format(img_idx,nof))
+            
+            #load image data json file
+            json_file_path = df.os.path.join(src_labels, original_filename+".json")
+            img_json_data = cf.GetDataFromJson(json_file_path)
+            if len(img_json_data[OBJECTS])==0:
+                continue
 
             #get current phase in split
             phase = cf.GetCurrentPhase(nof, img_idx)
@@ -42,10 +48,6 @@ def main():
 
             #save image in new location with correct format
             filename = cf.CopyImage(src_images, dst_images, original_filename)
-
-            #load image data json file
-            json_file_path = df.os.path.join(src_labels, original_filename+".json")
-            img_json_data = cf.GetDataFromJson(json_file_path)
 
             #extract image data from json
             img_h, img_w = cf.GetImgHWFromJson(img_json_data)
