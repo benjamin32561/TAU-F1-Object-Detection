@@ -67,8 +67,17 @@ def main():
     # display the graph
     plt.savefig(os.path.join(args.save_at, "before.png"))
 
-    min_cass_am = list(class_type_cnt.keys())[np.argmin(list(class_type_cnt.values()))]
+    min_cass = list(class_type_cnt.keys())[np.argmin(list(class_type_cnt.values()))]
+    min_cass_am = class_type_cnt[min_cass]
     print(min_cass_am)
+
+    del bbx_data[min_cass]
+
+    
+    print(bbx_data)
+    for key in bbx_data.keys():
+        bbx_data[key] = sorted(bbx_data[key], key=lambda x: x["rel_area"])
+    print(bbx_data)
     
     print("\nClass Distrebution after clean: ")
     
