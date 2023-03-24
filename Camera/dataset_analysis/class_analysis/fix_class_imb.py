@@ -73,15 +73,20 @@ def main():
 
     #removing min class
     del bbx_data[min_cass]
-    for key in bbx_data.keys(): #sorting each array and deleting smmallest bbx to create class balance
+    file_path_id = {}
+    for key in bbx_data.keys(): #sorting each array and saving bbx id to remove by file_path
         bbx_data_to_rem = sorted(bbx_data[key], key=lambda x: x["rel_area"])[:-min_cass_am]
         for bbx in bbx_data_to_rem:
-            fie_path = bbx["fie_path"]
-            img_json_data = cf.GetDataFromJson(fie_path)
-
-            old_img_bbx = img_json_data[OBJECTS]
-            img_json_data[OBJECTS] = [d for d in old_img_bbx if d.get(ID) != bbx[ID]]
-            WriteJsonFiles({fie_path:img_json_data})
+            file_path = bbx["fie_path"]
+            if file_path not in file_path_id.keys():
+                file_path_id[file_path] = []
+            file_path_id[file_path].append(bbx[ID])
+    for file_path in file_path_id.keys(): #deleting bbx to rem from files
+        img_json_data = cf.GetDataFromJson(file_path)
+        old_img_bbx = img_json_data[OBJECTS]
+        bbx_id_to_rem = file_path_id[file_path]
+        img_json_data[OBJECTS] = [d for d in old_img_bbx if d[ID] not in bbx_id_to_rem]
+        WriteJsonFiles({file_path:img_json_data})
     
     print("\nClass Distrebution after clean: ")
     
