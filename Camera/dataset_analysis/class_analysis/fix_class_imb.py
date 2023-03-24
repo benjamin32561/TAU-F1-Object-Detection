@@ -45,6 +45,7 @@ def main():
                 w,h = GetImgHWFromJson(img_json_data)
                 current_bbx_data["rel_area"] = bbx_area/(w*h)
                 current_bbx_data[ID] = bbx[ID]
+                current_bbx_data[CLASS_TITLE] = bbx[CLASS_TITLE]
                 bbx_data.append(current_bbx_data)
 
     print("Class Distrebution before clean: ")
@@ -58,7 +59,7 @@ def main():
 
     # display the graph
     plt.show()
-    min_cass_am = class_type_cnt.keys()[np.argmin(class_type_cnt.values())]
+    min_cass_am = list(class_type_cnt.keys())[np.argmin(list(class_type_cnt.values()))]
     print(min_cass_am)
 
     
