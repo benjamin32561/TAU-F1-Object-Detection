@@ -1,5 +1,6 @@
 import sys
 import os
+import sns
 sys.path.append(os.path.abspath('../../'))
 import matplotlib.pyplot as plt
 import common.functions as cf
@@ -38,12 +39,7 @@ def main():
     print("Class Distrebution before clean: ")
 
     print(class_type_cnt)
-    plt.bar(class_type_cnt.keys(),class_type_cnt.values(),color=(0.2, 0.4, 0.6, 0.6))
-
-    plt.xticks(range(len(class_type_cnt.keys())), class_type_cnt.keys())
-
-    # Show graph
-    plt.show()
+    sns.displot(class_type_cnt, x="Class")
 
     
     print("Class Distrebution after clean: ")
