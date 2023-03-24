@@ -39,7 +39,7 @@ def main():
     print("Class Distrebution before clean: ")
 
     print(class_type_cnt)
-    sns.displot(class_type_cnt, x="Class")
+    sns.displot(y=class_type_cnt.values(), x=class_type_cnt.keys())
 
     
     print("Class Distrebution after clean: ")
