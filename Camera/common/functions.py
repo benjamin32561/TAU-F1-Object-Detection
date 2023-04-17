@@ -87,9 +87,9 @@ def CopyImage(src_folder:str,dst_folder:str,original_filename:str):
     short_filename = original_filename[:-4]
     new_f = os.path.join(dst_folder, short_filename+IMG_EXTEN)
     if MOVE_IMAGES:
-    	shutil.move(f, new_f)
+        shutil.move(f, new_f)
     else:
-    	shutil.copyfile(f, new_f)
+        shutil.copyfile(f, new_f)
     return short_filename
 
 """
@@ -117,6 +117,21 @@ def WriteJsonFiles(path_and_data:dict):
             json.dump(val,json_file,indent=4)
 
 """
+desription: returns width and height of given bounding box, bounding box variable format is same as original dataset
+input:
+	bbx - the bounding box data
+output:
+    - float, width
+    - float, height
+"""
+def GetBbxWH(bbx):
+    start_end = bbx[POINTS][EXT]
+    x1,y1 = start_end[0][0],start_end[0][1]
+    x2,y2 = start_end[1][0],start_end[1][1]
+    width, height = x2-x1, y2-y1
+    return width, height
+
+"""
 desription: return area of given bounding box, bounding box variable format is same as original dataset
 input:
 	bbx - the bounding box data
@@ -128,3 +143,4 @@ def GetBbxArea(bbx):
     x2,y2 = start_end[1][0],start_end[1][1]
     delta_x, delta_y = x2-x1, y2-y1
     return delta_x*delta_y
+

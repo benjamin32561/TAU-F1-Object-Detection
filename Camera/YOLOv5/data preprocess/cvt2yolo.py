@@ -38,7 +38,7 @@ def main():
             #load image data json file
             json_file_path = df.os.path.join(src_labels, original_filename+".json")
             img_json_data = cf.GetDataFromJson(json_file_path)
-            if len(img_json_data[OBJECTS])==0:
+            if len(img_json_data[OBJECTS])==0: # image does not contain bounding boxes, skip it 
                 continue
 
             #get current phase in split
