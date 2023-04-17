@@ -50,7 +50,7 @@ def main():
                     class_type_cnt[bbx[CLASS_TITLE]]+=1
                 
                 current_bbx_data = {}
-                current_bbx_data["fie_path"] = json_file_path
+                current_bbx_data["file_path"] = json_file_path
                 bbx_area = GetBbxArea(bbx)
                 w,h = GetImgHWFromJson(img_json_data)
                 current_bbx_data["rel_area"] = bbx_area/(w*h)
@@ -81,7 +81,7 @@ def main():
         #sorting
         bbx_data_to_rem = sorted(bbx_data[key], key=lambda x: x["rel_area"])[:-min_class_am]
         for bbx in bbx_data_to_rem: #saving bbx to del by json file path
-            file_path = bbx["fie_path"]
+            file_path = bbx["file_path"]
             if file_path not in file_path_id.keys():
                 file_path_id[file_path] = []
             file_path_id[file_path].append(bbx[ID])
