@@ -52,8 +52,7 @@ def main():
                 current_bbx_data = {}
                 current_bbx_data["file_path"] = json_file_path
                 bbx_area = GetBbxArea(bbx)
-                w,h = GetImgHWFromJson(img_json_data)
-                current_bbx_data["rel_area"] = bbx_area/(w*h)
+                current_bbx_data["rel_area"] = bbx_area
                 current_bbx_data[ID] = bbx[ID]
                 bbx_data[bbx[CLASS_TITLE]].append(current_bbx_data)
 
