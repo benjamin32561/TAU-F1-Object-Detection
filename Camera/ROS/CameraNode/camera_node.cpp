@@ -1,4 +1,4 @@
-#include <stdin.h>
+#include <stdin>
 
 int main()
 {
