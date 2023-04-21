@@ -73,7 +73,7 @@ def main():
                 else:
                     final_cnt[bbx[CLASS_TITLE]]+=1
                 
-                img_h, img_w = GetImgHWFromJson(json_file_path)
+                img_h, img_w = GetImgHWFromJson(img_json_data)
                 is_good = IsGoodBbx(GetBbxWH(bbx),(img_w,img_h))
                 if is_good or bbx[CLASS_TITLE] in NOISE_CLASS:
                     if json_file_path not in file_path_id.keys():
