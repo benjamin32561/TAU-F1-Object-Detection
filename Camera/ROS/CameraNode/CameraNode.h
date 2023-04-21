@@ -1,23 +1,15 @@
-#ifndef CAMERA_NODE_H
-#define CAMERA_NODE_H
-
-#include <ros/ros.h>
-#include <sensor_msgs/Image.h>
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/image.hpp>
+#include <opencv2/opencv.hpp>
 #include <sl/Camera.hpp>
 
-class CameraNode
-{
+class CameraNode : public rclcpp::Node {
 public:
-    CameraNode(ros::NodeHandle& nh);
-    ~CameraNode();
+    CameraNode();
 
 private:
-    void imageCallback(const ros::TimerEvent& event);
-
-    ros::NodeHandle nh_;
-    ros::Publisher image_pub_;
-    ros::Timer timer_;
+    rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_pub_;
     sl::Camera zed_;
-};
 
-#endif
+    void captureImage();
+};

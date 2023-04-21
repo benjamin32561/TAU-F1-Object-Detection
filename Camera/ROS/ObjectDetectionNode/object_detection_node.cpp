@@ -1,6 +1,11 @@
 #include <ros/ros.h>
 #include <sensor_msgs/Image.h>
 #include <std_msgs/Empty.h>
+#include "model/model.h"
+
+
+// compile:
+// g++ object_detection_node.cpp -o ~/TAU-F1-Object-Detection/Camera/ROS/object_detection_node.out
 
 void imageCallback(const sensor_msgs::Image& image)
 {

@@ -1,27 +1,20 @@
-#include <stdin>
+#include <iostream>
+#include "CameraNode.h"
 
-int main()
-{
-    std::cout << "nice!" << std::endl;
-    
+// compile:
+// g++ camera_node.cpp -o ~/TAU-F1-Object-Detection/Camera/ROS/camera_node.out
+
+int main(int argc, char** argv) {
+    rclcpp::init(argc, argv);
+    auto node = std::make_shared<CameraNode>();
+
+    rclcpp::Rate loop_rate(30);
+    while (rclcpp::ok()) {
+        node->captureImage();
+        rclcpp::spin_some(node);
+        loop_rate.sleep();
+    }
+
+    rclcpp::shutdown();
     return 0;
 }
-
-// #include <ros/ros.h>
-// #include <sensor_msgs/Image.h>
-// #include "CameraNode.h"
-
-// int main(int argc, char** argv)
-// {
-//     // Initialize ROS node
-//     ros::init(argc, argv, "camera_node");
-//     ros::NodeHandle nh;
-
-//     // Create camera node
-//     CameraNode camera_node(nh);
-
-//     // Spin ROS node
-//     ros::spin();
-
-//     return 0;
-// }
