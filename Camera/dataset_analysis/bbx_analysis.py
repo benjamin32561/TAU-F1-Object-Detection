@@ -1,7 +1,7 @@
 import sys
 import os
 import cv2
-sys.path.append(os.path.abspath('../../'))
+sys.path.append(os.path.abspath('../'))
 import common.functions as cf
 from common.consts import POINTS, EXT
 

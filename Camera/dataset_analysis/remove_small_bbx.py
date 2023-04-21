@@ -2,14 +2,16 @@ import sys
 import os
 import numpy as np
 import seaborn as sns
-sys.path.append(os.path.abspath('../../'))
+sys.path.append(os.path.abspath('../'))
 import matplotlib.pyplot as plt
 import common.functions as cf
 from loguru import logger
 import argparse
 from common.consts import IMAGES_SUB_FOLDER, LABELS_SUB_FOLDER, \
-                        SRC_PATH, OBJECTS, CLASS_TITLE, ID
-from common.functions import GetBbxArea, GetImgHWFromJson, WriteJsonFiles
+                        SRC_PATH, OBJECTS, CLASS_TITLE, ID , \
+                        MIN_BBX_WIDTH, MIN_BBX_HEIGHT, NOISE_CLASS
+                        
+from common.functions import GetBbxWH, WriteJsonFiles
 
 def main():
     parser = argparse.ArgumentParser(description='My script')
@@ -24,8 +26,9 @@ def main():
     folders, _ = cf.GetSubFolders(SRC_PATH)
     n_folder = 1
 
-    class_type_cnt = {}
-    bbx_data = {}
+    final_cnt = {}
+    removed_cnt = {}
+    file_path_id = {}
     for src_sub_path in folders: #iterating through sub folders
         n_folder+=1
 
@@ -43,47 +46,31 @@ def main():
             img_json_data = cf.GetDataFromJson(json_file_path)
 
             for bbx in img_json_data[OBJECTS]:
-                if bbx[CLASS_TITLE] not in class_type_cnt.keys():
-                    class_type_cnt[bbx[CLASS_TITLE]] = 1
-                    bbx_data[bbx[CLASS_TITLE]] = []
+                if bbx[CLASS_TITLE] not in final_cnt.keys():
+                    final_cnt[bbx[CLASS_TITLE]] = 1
+                    removed_cnt[bbx[CLASS_TITLE]] = 0
                 else:
-                    class_type_cnt[bbx[CLASS_TITLE]]+=1
+                    final_cnt[bbx[CLASS_TITLE]]+=1
                 
-                current_bbx_data = {}
-                current_bbx_data["file_path"] = json_file_path
-                bbx_area = GetBbxArea(bbx)
-                current_bbx_data["rel_area"] = bbx_area
-                current_bbx_data[ID] = bbx[ID]
-                bbx_data[bbx[CLASS_TITLE]].append(current_bbx_data)
+                w,h = GetBbxWH(bbx)
+                if w < MIN_BBX_WIDTH or h<MIN_BBX_HEIGHT or bbx[CLASS_TITLE] in NOISE_CLASS:
+                    file_path = bbx["file_path"]
+                    if file_path not in file_path_id.keys():
+                        file_path_id[file_path] = []
+                    file_path_id[file_path].append(bbx[ID])
+                    removed_cnt[bbx[CLASS_TITLE]]+=1
 
     print("Class Distrebution before clean: ")
 
-    print(class_type_cnt)# create a barplot using Seaborn
+    print(final_cnt)# create a barplot using Seaborn
+    plt.figure(figsize=(10, 6))
     sns.set(style="whitegrid")
-    ax = sns.barplot(x=list(class_type_cnt.keys()), y=list(class_type_cnt.values()))
+    ax = sns.barplot(x=list(final_cnt.keys()), y=list(final_cnt.values()))
     # set the labels and title
     ax.set(xlabel='Class Names', ylabel='Number of Objects', title='Class Object Count')
     # display the graph
-    plt.savefig(os.path.join(args.save_at, "before.png"))
+    plt.savefig(os.path.join(args.save_at, "Class Dist Before BBX Clean.png"))
 
-    min_class = list(class_type_cnt.keys())[np.argmin(list(class_type_cnt.values()))]
-    min_class_am = class_type_cnt[min_class]
-    print(min_class_am)
-    final = {}
-    for key in class_type_cnt.keys():
-        final[key] = min_class_am
-
-    #fixing class imb by deleting n smallest objects from each class
-    del bbx_data[min_class] #removing min class
-    file_path_id = {}
-    for key in bbx_data.keys(): #sorting each array and saving bbx id to remove by file_path
-        #sorting
-        bbx_data_to_rem = sorted(bbx_data[key], key=lambda x: x["rel_area"])[:-min_class_am]
-        for bbx in bbx_data_to_rem: #saving bbx to del by json file path
-            file_path = bbx["file_path"]
-            if file_path not in file_path_id.keys():
-                file_path_id[file_path] = []
-            file_path_id[file_path].append(bbx[ID])
     for file_path in file_path_id.keys(): #deleting bbx from files
         img_json_data = cf.GetDataFromJson(file_path)
         old_img_bbx = img_json_data[OBJECTS]
@@ -93,15 +80,18 @@ def main():
     
     print("\nClass Distrebution after clean: ")
 
-    print(final)
+    final_cnt = {key: final_cnt[key] - removed_cnt[key] for key in final_cnt}
+
+    print(final_cnt)
     # create a barplot using Seaborn
     plt.clf()
+    plt.figure(figsize=(10, 6))
     sns.set(style="whitegrid")
-    ax = sns.barplot(x=list(final.keys()), y=list(final.values()))
+    ax = sns.barplot(x=list(final_cnt.keys()), y=list(final_cnt.values()))
     # set the labels and title
     ax.set(xlabel='Class Names', ylabel='Number of Objects', title='Class Object Count')
     # display the graph
-    plt.savefig(os.path.join(args.save_at, "after.png"))
+    plt.savefig(os.path.join(args.save_at, "Class Dist After BBX Clean.png"))
 
 if __name__ == '__main__':
     main()
