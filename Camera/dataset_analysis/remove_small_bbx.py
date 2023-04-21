@@ -9,9 +9,30 @@ from loguru import logger
 import argparse
 from common.consts import IMAGES_SUB_FOLDER, LABELS_SUB_FOLDER, \
                         SRC_PATH, OBJECTS, CLASS_TITLE, ID , \
-                        MIN_BBX_WIDTH, MIN_BBX_HEIGHT, NOISE_CLASS
+                        TRAIN_IMAGE_SIZE, MIN_BBX_SIZE, NOISE_CLASS
                         
-from common.functions import GetBbxWH, WriteJsonFiles
+from common.functions import GetBbxWH, WriteJsonFiles, GetImgHWFromJson
+
+def IsGoodBbx(box_size, img_size):
+    """
+    Determines whether a bounding box should be filtered based on a minimum size threshold.
+    input:
+        box_size (tuple): The size of the bounding box in pixels (width, height).
+        img_size (tuple): The dimensions of the image in pixels (width, height).
+        min_size (tuple, optional): The minimum bounding box size threshold in pixels.
+    output:
+        bool: True if the bounding box is good, False if it should be filtered.
+
+    """
+    # Calculate the minimum bounding box size threshold relative to the image size
+    min_size_x = int(MIN_BBX_SIZE[0] * img_size[0] / TRAIN_IMAGE_SIZE[0])
+    min_size_y = int(MIN_BBX_SIZE[1] * img_size[1] / TRAIN_IMAGE_SIZE[1])
+
+    # Check if the bounding box size is greater than or equal to the minimum size threshold
+    if box_size[0] >= min_size_x and box_size[1] >= min_size_y:
+        return True
+    else:
+        return False
 
 def main():
     parser = argparse.ArgumentParser(description='My script')
@@ -52,8 +73,9 @@ def main():
                 else:
                     final_cnt[bbx[CLASS_TITLE]]+=1
                 
-                w,h = GetBbxWH(bbx)
-                if w < MIN_BBX_WIDTH or h<MIN_BBX_HEIGHT or bbx[CLASS_TITLE] in NOISE_CLASS:
+                img_h, img_w = GetImgHWFromJson(json_file_path)
+                is_good = IsGoodBbx(GetBbxWH(bbx),(img_w,img_h))
+                if is_good or bbx[CLASS_TITLE] in NOISE_CLASS:
                     if json_file_path not in file_path_id.keys():
                         file_path_id[json_file_path] = []
                     file_path_id[json_file_path].append(bbx[ID])
