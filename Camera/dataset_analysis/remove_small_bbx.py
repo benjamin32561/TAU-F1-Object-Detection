@@ -54,10 +54,9 @@ def main():
                 
                 w,h = GetBbxWH(bbx)
                 if w < MIN_BBX_WIDTH or h<MIN_BBX_HEIGHT or bbx[CLASS_TITLE] in NOISE_CLASS:
-                    file_path = bbx["file_path"]
-                    if file_path not in file_path_id.keys():
-                        file_path_id[file_path] = []
-                    file_path_id[file_path].append(bbx[ID])
+                    if json_file_path not in file_path_id.keys():
+                        file_path_id[json_file_path] = []
+                    file_path_id[json_file_path].append(bbx[ID])
                     removed_cnt[bbx[CLASS_TITLE]]+=1
 
     print("Class Distrebution before clean: ")
