@@ -17,9 +17,17 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(cv_bridge REQUIRED)
+find_package(image_transport REQUIRED)
+find_package(OpenCV 2 REQUIRED)
+find_package(sl REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
+
+add_executable(camera_node src/camera_node.cpp)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
