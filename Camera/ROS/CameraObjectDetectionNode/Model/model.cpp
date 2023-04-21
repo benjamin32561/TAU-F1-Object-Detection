@@ -15,5 +15,5 @@ Model::~Model()
     model_.reset();
 }
 
-void Model::detect() 
+void Model::Detect() 
 { }
