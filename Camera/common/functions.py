@@ -51,9 +51,10 @@ output:
 	list - list of all files (shuffled)
 	int - amount of files
 """
-def GetFilesInDir(dir_path:str):
+def GetFilesInDir(dir_path:str, shuffle=True):
     file_list = os.listdir(dir_path)
-    random.shuffle(file_list)
+    if shuffle:
+        random.shuffle(file_list)
     return file_list, len(file_list)
 
 """
