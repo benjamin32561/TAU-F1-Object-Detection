@@ -67,19 +67,20 @@ def main():
             img_json_data = cf.GetDataFromJson(json_file_path)
 
             for bbx in img_json_data[OBJECTS]:
-                if bbx[CLASS_TITLE] not in final_cnt.keys():
-                    final_cnt[bbx[CLASS_TITLE]] = 1
-                    removed_cnt[bbx[CLASS_TITLE]] = 0
+                class_title = bbx[CLASS_TITLE]
+                if class_title not in final_cnt.keys():
+                    final_cnt[class_title] = 1
+                    removed_cnt[class_title] = 0
                 else:
-                    final_cnt[bbx[CLASS_TITLE]]+=1
+                    final_cnt[class_title]+=1
                 
                 img_h, img_w = GetImgHWFromJson(img_json_data)
                 is_good = IsGoodBbx(GetBbxWH(bbx),(img_w,img_h))
-                if is_good or bbx[CLASS_TITLE] in NOISE_CLASS:
+                if is_good or class_title in NOISE_CLASS:
                     if json_file_path not in file_path_id.keys():
                         file_path_id[json_file_path] = []
                     file_path_id[json_file_path].append(bbx[ID])
-                    removed_cnt[bbx[CLASS_TITLE]]+=1
+                    removed_cnt[class_title]+=1
 
     print("Class Distrebution before clean: ")
 
