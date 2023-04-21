@@ -3,7 +3,7 @@
 <package format="3">
   <name>detection_postprocessing_node</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>Object detection model output processing node</description>
   <maintainer email="ben32561@gmail.com">ben</maintainer>
   <license>TODO: License declaration</license>
 

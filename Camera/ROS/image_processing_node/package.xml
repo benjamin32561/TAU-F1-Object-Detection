@@ -3,7 +3,7 @@
 <package format="3">
   <name>image_processing_node</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>Image (camera node output) preprocessing node</description>
   <maintainer email="ben32561@gmail.com">ben</maintainer>
   <license>TODO: License declaration</license>
 

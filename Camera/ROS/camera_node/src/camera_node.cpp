@@ -1,4 +1,3 @@
-#include <iostream>
 #include "CameraNode.h"
 
 // compile:
@@ -7,14 +6,7 @@
 int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
     auto node = std::make_shared<CameraNode>();
-
-    rclcpp::Rate loop_rate(30);
-    while (rclcpp::ok()) {
-        node->captureImage();
-        rclcpp::spin_some(node);
-        loop_rate.sleep();
-    }
-
+    rclcpp::spin(node);
     rclcpp::shutdown();
     return 0;
 }

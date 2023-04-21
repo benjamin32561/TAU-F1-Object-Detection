@@ -3,7 +3,7 @@
 <package format="3">
   <name>camera_object_detection_node</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>Camera object detection model node (using image processing node output)</description>
   <maintainer email="ben32561@gmail.com">ben</maintainer>
   <license>TODO: License declaration</license>
 

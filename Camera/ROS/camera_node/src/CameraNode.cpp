@@ -1,4 +1,7 @@
-#include "CameraNode.h"
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/image.hpp>
+#include <opencv2/opencv.hpp>
+#include <sl/Camera.hpp>
 
 CameraNode::CameraNode() : Node("camera_node") 
 {
@@ -6,27 +9,40 @@ CameraNode::CameraNode() : Node("camera_node")
     image_pub_ = create_publisher<sensor_msgs::msg::Image>("image_topic", 10);
 
     // Initialize the ZED camera
+    zed_.open();
     sl::InitParameters init_params;
-    init_params.camera_resolution = sl::RESOLUTION_HD1080;
+    init_params.camera_resolution = sl::RESOLUTION::HD720;
     init_params.camera_fps = 30;
+    init_params.coordinate_units = sl::UNIT::METER;
     zed_.open(init_params);
+
+    // Set up the image message
+    image_msg_ = std::make_shared<sensor_msgs::msg::Image>();
+    image_msg_->header.frame_id = "camera_frame";
+    image_msg_->height = zed_.getCameraInformation().camera_resolution.height;
+    image_msg_->width = zed_.getCameraInformation().camera_resolution.width;
+    image_msg_->encoding = "bgr8";
+    image_msg_->is_bigendian = false;
+    image_msg_->step = zed_.getCameraInformation().camera_resolution.width * 3;
 }
 
-void CameraNode::captureImage() 
+CameraNode::~CameraNode()
 {
-    // Capture a new frame from the ZED camera
-    sl::Mat image_zed;
+    // Close the ZED camera
+    zed_.close();
+}
+
+void CameraNode::captureAndPublishImage() 
+{
+    // Capture a new image from the ZED camera
+    sl::Mat image;
     zed_.grab();
-    zed_.retrieveImage(image_zed, sl::VIEW_LEFT);
+    zed_.retrieveImage(image, sl::VIEW::LEFT);
 
-    // Convert the image format from ZED to OpenCV
-    cv::Mat image_cv(image_zed.getHeight(), image_zed.getWidth(),
-                        CV_8UC4, image_zed.getPtr<sl::uchar1>(sl::MEM_CPU));
+    // Copy the image data to the image message
+    memcpy(&image_msg_->data[0], image.getPtr<sl::uchar1>(sl::MEM::CPU), image_msg_->step * image_msg_->height);
 
-    // Create a sensor_msgs/Image message from the OpenCV image
-    sensor_msgs::msg::Image::SharedPtr image_msg =
-        cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", image_cv).toImageMsg();
-
-    // Publish the image message to the image topic
-    image_pub_->publish(*image_msg);
+    // Publish the image message
+    image_msg_->header.stamp = this->now();
+    image_pub_->publish(*image_msg_);
 }
