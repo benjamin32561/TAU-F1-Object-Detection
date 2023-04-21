@@ -93,12 +93,12 @@ def main():
     # display the graph
     plt.savefig(os.path.join(args.save_at, "Class Dist Before BBX Clean.png"))
 
-    # for file_path in file_path_id.keys(): #deleting bbx from files
-    #     img_json_data = cf.GetDataFromJson(file_path)
-    #     old_img_bbx = img_json_data[OBJECTS]
-    #     bbx_id_to_rem = file_path_id[file_path]
-    #     img_json_data[OBJECTS] = [d for d in old_img_bbx if d[ID] not in bbx_id_to_rem]
-    #     WriteJsonFiles({file_path:img_json_data})
+    for file_path in file_path_id.keys(): #deleting bbx from files
+        img_json_data = cf.GetDataFromJson(file_path)
+        old_img_bbx = img_json_data[OBJECTS]
+        bbx_id_to_rem = file_path_id[file_path]
+        img_json_data[OBJECTS] = [d for d in old_img_bbx if d[ID] not in bbx_id_to_rem]
+        WriteJsonFiles({file_path:img_json_data})
     
     print("\nClass Distrebution after clean: ")
 
