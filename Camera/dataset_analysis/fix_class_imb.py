@@ -16,6 +16,7 @@ def main():
 
     # add a --save_at argument to the parser
     parser.add_argument('--save_at', type=str, default='/content/', help='folder path to save graphs at')
+    parser.add_argument('--dry_run', type=bool, default=False, help='whether to dry run')
 
     # parse the command-line arguments
     args = parser.parse_args()
@@ -74,23 +75,24 @@ def main():
     for key in class_type_cnt.keys():
         final[key] = min_class_am
 
-    #fixing class imb by deleting n smallest objects from each class
-    del bbx_data[min_class] #removing min class
-    file_path_id = {}
-    for key in bbx_data.keys(): #sorting each array and saving bbx id to remove by file_path
-        #sorting
-        bbx_data_to_rem = sorted(bbx_data[key], key=lambda x: x["rel_area"])[:-min_class_am]
-        for bbx in bbx_data_to_rem: #saving bbx to del by json file path
-            file_path = bbx["file_path"]
-            if file_path not in file_path_id.keys():
-                file_path_id[file_path] = []
-            file_path_id[file_path].append(bbx[ID])
-    for file_path in file_path_id.keys(): #deleting bbx from files
-        img_json_data = cf.GetDataFromJson(file_path)
-        old_img_bbx = img_json_data[OBJECTS]
-        bbx_id_to_rem = file_path_id[file_path]
-        img_json_data[OBJECTS] = [d for d in old_img_bbx if d[ID] not in bbx_id_to_rem]
-        WriteJsonFiles({file_path:img_json_data})
+    if not args.dry_run:
+        #fixing class imb by deleting n smallest objects from each class
+        del bbx_data[min_class] #removing min class
+        file_path_id = {}
+        for key in bbx_data.keys(): #sorting each array and saving bbx id to remove by file_path
+            #sorting
+            bbx_data_to_rem = sorted(bbx_data[key], key=lambda x: x["rel_area"])[:-min_class_am]
+            for bbx in bbx_data_to_rem: #saving bbx to del by json file path
+                file_path = bbx["file_path"]
+                if file_path not in file_path_id.keys():
+                    file_path_id[file_path] = []
+                file_path_id[file_path].append(bbx[ID])
+        for file_path in file_path_id.keys(): #deleting bbx from files
+            img_json_data = cf.GetDataFromJson(file_path)
+            old_img_bbx = img_json_data[OBJECTS]
+            bbx_id_to_rem = file_path_id[file_path]
+            img_json_data[OBJECTS] = [d for d in old_img_bbx if d[ID] not in bbx_id_to_rem]
+            WriteJsonFiles({file_path:img_json_data})
     
     print("\nClass Distrebution after clean: ")
 

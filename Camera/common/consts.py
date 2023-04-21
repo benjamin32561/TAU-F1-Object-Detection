@@ -18,7 +18,7 @@ ID = "id"
 
 IMG_EXTEN = ".jpg"
 
-MOVE_IMAGES = True
+MOVE_IMAGES = False # True for moving the files, False for copying
 
 BOUNDING_BOX_AREA_THRESH = 0.0009 #0.000025
 MIN_BBX_SIZE = (16,16)
