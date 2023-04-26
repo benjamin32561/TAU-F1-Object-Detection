@@ -77,7 +77,7 @@ def main():
                 
                 img_h, img_w = GetImgHWFromJson(img_json_data)
                 is_good = IsGoodBbx(GetBbxWH(bbx),(img_w,img_h))
-                if is_good or class_title in NOISE_CLASS:
+                if (not is_good) or class_title in NOISE_CLASS:
                     if json_file_path not in file_path_id.keys():
                         file_path_id[json_file_path] = []
                     file_path_id[json_file_path].append(bbx[ID])
