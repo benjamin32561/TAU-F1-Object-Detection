@@ -20,6 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'camera_object_detection_node = camera_object_detection_node:main',
         ],
     },
 )
