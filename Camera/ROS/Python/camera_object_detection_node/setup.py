@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'image_processing_node'
+package_name = 'camera_object_detection_node'
 
 setup(
     name=package_name,
@@ -20,7 +20,6 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'image_processing_node = image_processing_node:main',
         ],
     },
 )
