@@ -21,11 +21,22 @@ find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(image_transport REQUIRED)
-find_package(OpenCV 2 REQUIRED)
-find_package(sl REQUIRED)
+find_package(OpenCV REQUIRED)
+find_package(ZED 3 REQUIRED)
+find_package(CUDA REQUIRED)
+find_package(rcutils REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
+
+include_directories(${rclcpp_INCLUDE_DIRS})
+include_directories(${OpenCV_INCLUDE_DIRS})
+include_directories(${ZED_INCLUDE_DIRS})
+include_directories(${CUDA_INCLUDE_DIRS})
+include_directories(${rcutils_INCLUDE_DIRS})
+
+link_directories(${CUDA_LIBRARY_DIRS})
+link_directories(${rcutils_LIBRARY_DIRS})
 
 add_executable(camera_node src/camera_node.cpp)
 
