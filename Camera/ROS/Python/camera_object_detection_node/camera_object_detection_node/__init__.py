@@ -5,14 +5,7 @@ from rclpy.node import Node
 from sensor_msgs.msg import Image
 from std_msgs.msg import String
 import cv2
-
-class ObjectDetectionModel():
-    def __init__(self):
-        self.model = None
-    
-    def DetectObjects(self, img):
-        detections = None
-        return detections
+from camera_object_detection_node.Model import ObjectDetectionModel
 
 class ImagePreprocessingNode(Node):
     def __init__(self):
