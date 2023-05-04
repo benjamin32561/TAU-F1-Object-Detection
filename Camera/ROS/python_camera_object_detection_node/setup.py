@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'camera_node'
+package_name = 'python_camera_object_detection_node'
 
 setup(
     name=package_name,
@@ -20,7 +20,6 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'camera_node = camera_node:main',
         ],
     },
 )

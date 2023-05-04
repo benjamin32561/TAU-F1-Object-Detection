@@ -5,7 +5,7 @@ from rclpy.node import Node
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 
-from camera_node.Camera import Camera
+from python_camera_object_detection_node.Camera import Camera
 
 class CameraNode(Node):
     def __init__(self):
