@@ -3,7 +3,7 @@
 #include <opencv2/opencv.hpp>
 #include <sl/Camera.hpp>
 
-CameraNode::CameraNode() : Node("camera_node") 
+ObjectDetectionNode::ObjectDetectionNode() : Node("camera_node") 
 {
     // Create the publisher for the image topic
     image_pub_ = create_publisher<sensor_msgs::msg::Image>("image_topic", 10);
@@ -26,13 +26,13 @@ CameraNode::CameraNode() : Node("camera_node")
     image_msg_->step = zed_.getCameraInformation().camera_resolution.width * 3;
 }
 
-CameraNode::~CameraNode()
+ObjectDetectionNode::~ObjectDetectionNode()
 {
     // Close the ZED camera
     zed_.close();
 }
 
-void CameraNode::captureAndPublishImage() 
+void ObjectDetectionNode::captureAndPublishImage() 
 {
     // Capture a new image from the ZED camera
     sl::Mat image;
