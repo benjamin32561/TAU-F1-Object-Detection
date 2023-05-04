@@ -7,5 +7,5 @@ class ImagePreprocessing
 public:
     ImagePreprocessing();
 
-    sensor_msgs::msg::Image::SharedPtr preprocess(const sensor_msgs::msg::Image::SharedPtr& msg);
+    void PreprocessImage();
 };
