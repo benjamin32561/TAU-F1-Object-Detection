@@ -3,6 +3,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
+from cv2 import resize
 
 from python_camera_object_detection_node.Camera import Camera
 from python_camera_object_detection_node.Models import YOLOv5
@@ -29,12 +30,13 @@ class CameraObjectDetectionNode(Node):
         if self.camera is not None:
             img = self.camera.GetImage()
         if img is not None:
-            print('')
-            #preprocess image
+            # preprocess image
+            img = resize(img,self.model.image_dimensions)
 
+            # detect objects
             detections = self.model.DetectObbjects(img)
 
-            #postprocess detections
+            # postprocess detections
             msg = String()
             msg.data = ''
             self.publisher_.publish(msg)
