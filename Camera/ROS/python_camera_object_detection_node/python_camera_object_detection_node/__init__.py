@@ -2,38 +2,51 @@
 
 import rclpy
 from rclpy.node import Node
-from sensor_msgs.msg import Image
-from cv_bridge import CvBridge
+from std_msgs.msg import String
 
 from python_camera_object_detection_node.Camera import Camera
+from python_camera_object_detection_node.Models import YOLOv5
 
-class CameraNode(Node):
-    def __init__(self):
+PUBLISHER_NAME = 'camera_object_detection'
+YOLOv5 = "YOLOv5"
+
+class CameraObjectDetectionNode(Node):
+    def __init__(self,model=YOLOv5):
         super().__init__('camera_node')
-        self.publisher_ = self.create_publisher(Image, 'image_topic', 10)
+        self.publisher_ = self.create_publisher(String, PUBLISHER_NAME, 10)
         try:
             self.camera = Camera()
         except Exception as e:
             print(e)
             self.camera = None
-        self.bridge = CvBridge()
+        self.model = None
+
+        if model==YOLOv5:
+            self.model = YOLOv5('')
 
     def run(self):
-        while True:
-            img = None
-            if self.camera is not None:
-                img = self.camera.GetImage()
-            if img is not None:
-                msg = self.bridge.cv2_to_imgmsg(img)
-                self.publisher_.publish(msg)
-            else:
-                self.get_logger().info('img is None')
+        img = None
+        if self.camera is not None:
+            img = self.camera.GetImage()
+        if img is not None:
+            print('')
+            #preprocess image
+
+            detections = self.model.DetectObbjects(img)
+
+            #postprocess detections
+            msg = String()
+            msg.data = ''
+            self.publisher_.publish(msg)
+
+        else:
+            self.get_logger().info('img is None')
 
 def main(args=None):
     print('Started')
     rclpy.init(args=args)
-    camera_node = CameraNode()
-    camera_node.run()
+    camera_obj_ddt_node = CameraObjectDetectionNode()
+    rclpy.spin(camera_obj_ddt_node)
     rclpy.shutdown()
 
 if __name__ == '__main__':
