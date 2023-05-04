@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>image_processing_node</name>
+  <name>cpp_camera_object_detection_node</name>
   <version>0.0.0</version>
-  <description>Image (camera node output) preprocessing node</description>
+  <description>TODO: Package description</description>
   <maintainer email="ben32561@gmail.com">ben</maintainer>
   <license>TODO: License declaration</license>
 

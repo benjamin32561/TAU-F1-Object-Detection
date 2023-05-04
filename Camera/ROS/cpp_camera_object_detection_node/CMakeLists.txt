@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(detection_postprocessing_node)
+project(cpp_camera_object_detection_node)
 
 # Default to C99
 if(NOT CMAKE_C_STANDARD)
