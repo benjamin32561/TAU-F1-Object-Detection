@@ -47,7 +47,7 @@ class CameraObjectDetectionNode(Node):
 def main(args=None):
     print('Started')
     rclpy.init(args=args)
-    camera_obj_ddt_node = CameraObjectDetectionNode()
+    camera_obj_ddt_node = CameraObjectDetectionNode(YOLOv5)
     rclpy.spin(camera_obj_ddt_node)
     rclpy.shutdown()
 
