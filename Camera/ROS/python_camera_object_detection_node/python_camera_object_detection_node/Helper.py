@@ -20,4 +20,4 @@ def ListFilesInFolder(path):
     return files
 
 def GetRandomFromList(arr:list):
-    return arr[random.randint(0, len(arr))]
+    return arr[random.randint(0, len(arr)-1)]
