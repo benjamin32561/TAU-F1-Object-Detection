@@ -47,8 +47,8 @@ class CameraObjectDetectionNode(Node):
             self.get_logger().error(f"Failed to load model {model_type}: {e}")
         
     def run(self):
-        self.get_logger().info("started run")
         img = None
+        final_str = ''
         if self.camera is not None:
             img = self.camera.GetImage()
         if img is not None:
@@ -61,6 +61,7 @@ class CameraObjectDetectionNode(Node):
 
             # postprocess detections
             final_str = self.model.ModelResultsToMsgStr(results)
+            final_str = ''
             msg = String()
             msg.data = final_str
             self.publisher_.publish(msg)
@@ -74,6 +75,10 @@ class CameraObjectDetectionNode(Node):
                 img = resize(img,self.model.image_dimensions) # resizing image to match model
                 results = self.model.DetectObjects(img,True)
                 final_str = self.model.ModelResultsToMsgStr(results)
+                final_str = ''
+        msg = String()
+        msg.data = final_str
+        self.publisher_.publish(msg)
 
 def main(args=None):
     print('Started')
