@@ -10,26 +10,40 @@ import time
 from lidar_record_preprocess import PointCloudCropper
 #import patchwork modules
 import sys
-import pypatchworkpp
+#import pypatchworkpp
+import queue
+import threading
 
-target_path = "../../../patchwork-plusplus/build/python_wrapper"
+
+#build path
+target_path = "/home/idola/PycharmProjects/patchwork-plusplus/build/python_wrapper"
 
 try:
-    patchwork_module_path = target_path  
+    patchwork_module_path = target_path
     sys.path.insert(0, patchwork_module_path)
     import pypatchworkpp
 except ImportError:
     print("Cannot find pypatchworkpp!")
     exit(1)
 
+class FrameParameters:
+    def __init__(self, ground, nonground, timetaken, centers, normals):
+        self.ground = ground
+        self.nonground = nonground
+        self.timetaken = timetaken
+        self.centers = centers
+        self.normals = normals
+# Create a queue
+frame_queue = queue.Queue()
+
 #define the handler class and callback function
 class PointCloudPatchworkHandler:
     def __init__(self):
         self.attr = [FrameDataAttributes(GrabType.GRAB_TYPE_MEASURMENTS_REFLECTION0), FrameDataAttributes(GrabType.GRAB_TYPE_SINGLE_PIXEL_META_DATA)]
-        config_files_path = '../lidar_configuration_files'
+        config_files_path = '/home/idola/PycharmProjects/TAU-F1-Object-Detection/Lidar/innoviz_api/examples/lidar_configuration_files'
         #This config file will remove the blooming pixles.
         self.di = DeviceInterface(config_file_name=config_files_path+'/om_remove_blooming_config.json', is_connect=False)
-        # Patchwork++ initialization
+         #Patchwork++ initialization
         params = pypatchworkpp.Parameters()         #change sensor heights,elevation
         params.verbose = True
         params.sensor_height = 0.8
@@ -38,6 +52,8 @@ class PointCloudPatchworkHandler:
 
         for i in range(len(self.attr)):
             self.di.activate_buffer(self.attr[i], True)
+
+        self.pcc = PointCloudCropper(x_min=3, x_max=15, y_max=10, y_min=-10, z_max=3, z_min=-1)
 
     def callback(self, h):
         try:
@@ -52,10 +68,10 @@ class PointCloudPatchworkHandler:
                         vertices.append([mes['x'][pixel_num], mes['y'][pixel_num], mes['z'][pixel_num], mes['reflectivity'][pixel_num]])
                 vertices_np = np.asarray(vertices)
                 vertices_np /= 100 # convert to meters
-                croped_vertices = PointCloudCropper(vertices_np)
+                croped_vertices = self.pcc(vertices_np)
                     # Estimate Ground
                 self.PatchworkPLUSPLUS.estimateGround(croped_vertices)
-
+                print("estimate ground")
                  # Get Ground and Nonground
                 ground      = self.PatchworkPLUSPLUS.getGround()
                 nonground   = self.PatchworkPLUSPLUS.getNonground()
@@ -64,33 +80,81 @@ class PointCloudPatchworkHandler:
                 # Get centers and normals for patches
                 centers     = self.PatchworkPLUSPLUS.getCenters()
                 normals     = self.PatchworkPLUSPLUS.getNormals()
-                print("Origianl Points  #: ", croped_vertices.shape[0])
-                print("Ground Points    #: ", ground.shape[0])
-                print("Nonground Points #: ", nonground.shape[0])
-                print("Time Taken : ", time_taken / 1000000, "(sec)")
-                print("Press ... \n")
-                print("\t H  : help")
-                print("\t N  : visualize the surface normals")
-                print("\tESC : close the Open3D window")
+                #print("Origianl Points  #: ", croped_vertices.shape[0])
+                #print("Ground Points    #: ", ground.shape[0])
+                #print("Nonground Points #: ", nonground.shape[0])
+                #print("Time Taken : ", time_taken / 1000000, "(sec)")
+                #print("Press ... \n")
+                #print("\t H  : help")
+                #print("\t N  : visualize the surface normals")
+                #print("\tESC : close the Open3D window")
+                # Add the frame parameters to the queue
+                frame_params = FrameParameters(ground, nonground, time_taken, centers, normals)
+                frame_queue.put(frame_params)
 
-        except:
+        except Exception as err:
+            print(err)
             print('PointCloudPatchworkHandler: failed executing frame')
 
     def register_patchwork_handler(self):
         # Register callback
-        self.di.register_new_frame_callback(self.callback) 
+        self.di.register_new_frame_callback(self.callback)
+
+    def visualize_frame(self, frames_params):
+        # Visualize
+        vis = o3d.visualization.VisualizerWithKeyCallback()
+        vis.create_window(width=600, height=400)
+        mesh = o3d.geometry.TriangleMesh.create_coordinate_frame()
+        ground_o3d = o3d.geometry.PointCloud()
+        ground_o3d.points = o3d.utility.Vector3dVector(frames_params.ground)
+        ground_o3d.colors = o3d.utility.Vector3dVector(
+            np.array([[0.0, 1.0, 0.0] for _ in range(frames_params.ground.shape[0])], dtype=float))  # RGB
+
+        nonground_o3d = o3d.geometry.PointCloud()
+        nonground_o3d.points = o3d.utility.Vector3dVector(frames_params.nonground)
+        nonground_o3d.colors = o3d.utility.Vector3dVector(
+            np.array([[1.0, 0.0, 0.0] for _ in range(frames_params.nonground.shape[0])], dtype=float))  # RGB
+
+        centers_o3d = o3d.geometry.PointCloud()
+        centers_o3d.points = o3d.utility.Vector3dVector(frames_params.centers)
+        centers_o3d.normals = o3d.utility.Vector3dVector(frames_params.normals)
+        centers_o3d.colors = o3d.utility.Vector3dVector(
+            np.array([[1.0, 1.0, 0.0] for _ in range(frames_params.centers.shape[0])], dtype=float))  # RGB
+
+        vis.add_geometry(mesh)
+        vis.add_geometry(ground_o3d)
+        vis.add_geometry(nonground_o3d)
+        vis.add_geometry(centers_o3d)
+        vis.run()
+        vis.destroy_window()
 
     def finish(self):
         self.di.device_close()
 
 
 def main():
-
+    i = 0
     fh = PointCloudPatchworkHandler()
     fh.register_patchwork_handler()
-    time.sleep(20)
+    #time.sleep(20)
+    while i < 100000:
+        try:
+            frame_params = frame_queue.get(timeout=1)  # Timeout is optional
+            fh.visualize_frame(frame_params)
+            i += 1
+            print(i)
+        except queue.Empty:
+            print("queue is empty, breaking loop")
+            break
+
     print("The End:)")
     fh.finish()
+
+# Create a thread for the main function
+main_thread = threading.Thread(target=main)
+
+# Start the main thread
+main_thread.start()
 
 if __name__ == '__main__':
     main()
