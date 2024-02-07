@@ -100,34 +100,60 @@ class PointCloudPatchworkHandler:
         # Register callback
         self.di.register_new_frame_callback(self.callback)
 
-    def visualize_frame(self, frames_params):
+    def init_frame(self, vis, frame_params):
         # Visualize
-        vis = o3d.visualization.VisualizerWithKeyCallback()
-        vis.create_window(width=600, height=400)
+        #vis = o3d.visualization.VisualizerWithKeyCallback()
+        #print("vis1")
+        #vis.create_window(width=600, height=400)
         mesh = o3d.geometry.TriangleMesh.create_coordinate_frame()
         ground_o3d = o3d.geometry.PointCloud()
-        ground_o3d.points = o3d.utility.Vector3dVector(frames_params.ground)
-        ground_o3d.colors = o3d.utility.Vector3dVector(
-            np.array([[0.0, 1.0, 0.0] for _ in range(frames_params.ground.shape[0])], dtype=float))  # RGB
+        ground_o3d.points = o3d.utility.Vector3dVector(frame_params.ground)
+        print(frame_params.ground.shape[0])
+        print(frame_params.nonground.shape[0])
+        print(frame_params.centers.shape[0])
+
+        if frame_params.ground.shape[0] != 0:
+            ground_o3d.colors = o3d.utility.Vector3dVector(
+                np.array([[0.0, 1.0, 0.0] for _ in range(frame_params.ground.shape[0])], dtype=float))  # RGB
+        print("vis2\n")
 
         nonground_o3d = o3d.geometry.PointCloud()
-        nonground_o3d.points = o3d.utility.Vector3dVector(frames_params.nonground)
-        nonground_o3d.colors = o3d.utility.Vector3dVector(
-            np.array([[1.0, 0.0, 0.0] for _ in range(frames_params.nonground.shape[0])], dtype=float))  # RGB
+        nonground_o3d.points = o3d.utility.Vector3dVector(frame_params.nonground)
+        if frame_params.nonground.shape[0] != 0:
+            nonground_o3d.colors = o3d.utility.Vector3dVector(
+                np.array([[1.0, 0.0, 0.0] for _ in range(frame_params.nonground.shape[0])], dtype=float))  # RGB
+        print("vis3\n")
 
         centers_o3d = o3d.geometry.PointCloud()
-        centers_o3d.points = o3d.utility.Vector3dVector(frames_params.centers)
-        centers_o3d.normals = o3d.utility.Vector3dVector(frames_params.normals)
-        centers_o3d.colors = o3d.utility.Vector3dVector(
-            np.array([[1.0, 1.0, 0.0] for _ in range(frames_params.centers.shape[0])], dtype=float))  # RGB
+        centers_o3d.points = o3d.utility.Vector3dVector(frame_params.centers)
+        centers_o3d.normals = o3d.utility.Vector3dVector(frame_params.normals)
+        if frame_params.centers.shape[0] != 0 :
+            centers_o3d.colors = o3d.utility.Vector3dVector(
+                np.array([[1.0, 1.0, 0.0] for _ in range(frame_params.centers.shape[0])], dtype=float))  # RGB
 
         vis.add_geometry(mesh)
         vis.add_geometry(ground_o3d)
         vis.add_geometry(nonground_o3d)
         vis.add_geometry(centers_o3d)
-        vis.run()
-        vis.destroy_window()
+        print("vis4\n")
+        #vis.poll_events()
+        #vis.update_renderer()
+        #vis.run()
+        print("vis4\n")
 
+    def update_frame(self,vis, frame_params):
+        #ground_o3d = o3d.geometry.PointCloud()
+        #ground_o3d.points = o3d.utility.Vector3dVector(frame_params.ground)
+        #nonground_o3d = o3d.geometry.PointCloud()
+        #nonground_o3d.points = o3d.utility.Vector3dVector(frame_params.nonground)
+        #centers_o3d = o3d.geometry.PointCloud()
+        #centers_o3d.points = o3d.utility.Vector3dVector(frame_params.centers)
+        #centers_o3d.normals = o3d.utility.Vector3dVector(frame_params.normals)
+        #vis.update_geometry(ground_o3d)
+        #vis.update_geometry(nonground_o3d)
+        #vis.update_geometry(centers_o3d)
+        vis.poll_events()
+        vis.update_renderer()
     def finish(self):
         self.di.device_close()
 
@@ -136,19 +162,65 @@ def main():
     i = 0
     fh = PointCloudPatchworkHandler()
     fh.register_patchwork_handler()
+    vis = o3d.visualization.VisualizerWithKeyCallback()
+    vis.create_window(width=600, height=400)
     #time.sleep(20)
+    frame_params = frame_queue.get(timeout=1)  # Timeout is optional
+    mesh = o3d.geometry.TriangleMesh.create_coordinate_frame()
+    ground_o3d = o3d.geometry.PointCloud()
+    ground_o3d.points = o3d.utility.Vector3dVector(frame_params.ground)
+
+    if frame_params.ground.shape[0] != 0:
+        ground_o3d.colors = o3d.utility.Vector3dVector(
+            np.array([[0.0, 1.0, 0.0] for _ in range(frame_params.ground.shape[0])], dtype=float))  # RGB
+
+    nonground_o3d = o3d.geometry.PointCloud()
+    nonground_o3d.points = o3d.utility.Vector3dVector(frame_params.nonground)
+    if frame_params.nonground.shape[0] != 0:
+        nonground_o3d.colors = o3d.utility.Vector3dVector(
+            np.array([[1.0, 0.0, 0.0] for _ in range(frame_params.nonground.shape[0])], dtype=float))  # RGB
+
+    centers_o3d = o3d.geometry.PointCloud()
+    centers_o3d.points = o3d.utility.Vector3dVector(frame_params.centers)
+    centers_o3d.normals = o3d.utility.Vector3dVector(frame_params.normals)
+    if frame_params.centers.shape[0] != 0:
+        centers_o3d.colors = o3d.utility.Vector3dVector(
+            np.array([[1.0, 1.0, 0.0] for _ in range(frame_params.centers.shape[0])], dtype=float))  # RGB
+
+    vis.add_geometry(mesh)
+    vis.add_geometry(ground_o3d)
+    vis.add_geometry(nonground_o3d)
+    vis.add_geometry(centers_o3d)
     while i < 100000:
         try:
             frame_params = frame_queue.get(timeout=1)  # Timeout is optional
-            fh.visualize_frame(frame_params)
+            ground_o3d.points = o3d.utility.Vector3dVector(frame_params.ground)
+            if frame_params.ground.shape[0] != 0:
+                ground_o3d.colors = o3d.utility.Vector3dVector(
+                    np.array([[0.0, 1.0, 0.0] for _ in range(frame_params.ground.shape[0])], dtype=float))  # RGB
+            nongrounpipelinesd_o3d.points = o3d.utility.Vector3dVector(frame_params.nonground)
+            if frame_params.nonground.shape[0] != 0:
+                nonground_o3d.colors = o3d.utility.Vector3dVector(
+                    np.array([[1.0, 0.0, 0.0] for _ in range(frame_params.nonground.shape[0])], dtype=float))  # RGB
+            centers_o3d.points = o3d.utility.Vector3dVector(frame_params.centers)
+            centers_o3d.normals = o3d.utility.Vector3dVector(frame_params.normals)
+            if frame_params.centers.shape[0] != 0:
+                centers_o3d.colors = o3d.utility.Vector3dVector(
+                    np.array([[1.0, 1.0, 0.0] for _ in range(frame_params.centers.shape[0])], dtype=float))  # RGB
+            vis.update_geometry(ground_o3d)
+            vis.update_geometry(nonground_o3d)
+            vis.update_geometry(centers_o3d)
+            vis.poll_events()
+            vis.update_renderer()
+            time.sleep(0.01)
             i += 1
-            print(i)
         except queue.Empty:
             print("queue is empty, breaking loop")
             break
-
+    vis.destroy_window()
     print("The End:)")
     fh.finish()
+
 
 # Create a thread for the main function
 main_thread = threading.Thread(target=main)
