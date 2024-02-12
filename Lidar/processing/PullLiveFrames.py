@@ -7,7 +7,7 @@ import open3d as o3d
 import argparse
 import os
 import time
-from lidar_record_preprocess import PointCloudCropper
+from ..common.classes import FrameParameters, PointCloudCropper, Patchwork_init
 #import patchwork modules
 import sys
 #import pypatchworkpp
@@ -26,13 +26,6 @@ except ImportError:
     print("Cannot find pypatchworkpp!")
     exit(1)
 
-class FrameParameters:
-    def __init__(self, ground, nonground, timetaken, centers, normals):
-        self.ground = ground
-        self.nonground = nonground
-        self.timetaken = timetaken
-        self.centers = centers
-        self.normals = normals
 # Create a queue
 frame_queue = queue.Queue()
 
