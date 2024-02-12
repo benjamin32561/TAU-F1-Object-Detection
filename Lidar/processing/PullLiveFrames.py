@@ -198,7 +198,7 @@ def main():
             if frame_params.ground.shape[0] != 0:
                 ground_o3d.colors = o3d.utility.Vector3dVector(
                     np.array([[0.0, 1.0, 0.0] for _ in range(frame_params.ground.shape[0])], dtype=float))  # RGB
-            nongrounpipelinesd_o3d.points = o3d.utility.Vector3dVector(frame_params.nonground)
+            nonground_o3d.points = o3d.utility.Vector3dVector(frame_params.nonground)
             if frame_params.nonground.shape[0] != 0:
                 nonground_o3d.colors = o3d.utility.Vector3dVector(
                     np.array([[1.0, 0.0, 0.0] for _ in range(frame_params.nonground.shape[0])], dtype=float))  # RGB

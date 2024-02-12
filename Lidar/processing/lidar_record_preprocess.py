@@ -21,8 +21,8 @@ class PointCloudCropper(object):
 
 def split_lidar_record_to_frames(record_path,num_of_frames, format, output_path,pcd_cropper, normalize=False):
     attr = [FrameDataAttributes(GrabType.GRAB_TYPE_MEASURMENTS_REFLECTION0),FrameDataAttributes(GrabType.GRAB_TYPE_SINGLE_PIXEL_META_DATA)]
-    config_path = '../recording_remove_blooming_config.json'
-    frames = FileReader(record_path, num_of_cores=1,config_filepath=config_path)
+    config_path = '/home/idola/PycharmProjects/TAU-F1-Object-Detection/Lidar/innoviz_api/examples/lidar_configuration_files/recording_remove_blooming_config.json'
+    frames = FileReader('/Lidar/processing/Recordings', num_of_cores=1, config_filepath=config_path)
     number_of_frames = min(num_of_frames, frames.num_of_frames) if num_of_frames != -1 else frames.num_of_frames
     for i in range(number_of_frames):
         frame = frames.get_frame(i, attr)
