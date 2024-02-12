@@ -5,10 +5,11 @@ import open3d as o3d
 import argparse
 import os
 import queue
-from ..common.classes import FrameParameters, PointCloudCropper, Patchwork_init
+import sys
+from classes import FrameParameters, PointCloudCropper, Patchwork_init
 
 #build path
-target_path = "/home/alergand/code/patchwork-plusplus/build/python_wrapper"
+target_path = "/home/idola/PycharmProjects/patchwork-plusplus/build/python_wrapper"
 
 try:
     patchwork_module_path = target_path
@@ -21,8 +22,8 @@ except ImportError:
 
 def split_lidar_record_to_frames(record_path,num_of_frames, format, output_path,pcd_cropper, frame_queue, normalize=False):
     attr = [FrameDataAttributes(GrabType.GRAB_TYPE_MEASURMENTS_REFLECTION0),FrameDataAttributes(GrabType.GRAB_TYPE_SINGLE_PIXEL_META_DATA)]
-    config_path = '/home/alergand/code/TAU-F1-Object-Detection/Lidar/preprocessing/InnovizAPI/examples/lidar_configuration_files/recording_remove_blooming_config.json'
-    frames = FileReader('/Lidar/processing/recordings', num_of_cores=1, config_filepath=config_path)
+    config_path = '/home/idola/PycharmProjects/TAU-F1-Object-Detection/Lidar/innoviz_api/examples/lidar_configuration_files/recording_remove_blooming_config.json'
+    frames = FileReader('/home/idola/PycharmProjects/TAU-F1-Object-Detection/Lidar/processing/Recordings/', num_of_cores=1, config_filepath=config_path)
     number_of_frames = min(num_of_frames, frames.num_of_frames) if num_of_frames != -1 else frames.num_of_frames
     for i in range(number_of_frames):
         frame = frames.get_frame(i, attr)
@@ -35,17 +36,19 @@ def split_lidar_record_to_frames(record_path,num_of_frames, format, output_path,
                 if mes['confidence'][pixel_num] > 0 and meta['ghost'][pixel_num] == 0 and meta['noise'][pixel_num] == 0:
                     vertices.append([mes['x'][pixel_num], mes['y'][pixel_num], mes['z'][pixel_num], mes['reflectivity'][pixel_num]])
             vertices_np = np.asarray(vertices)
-            vertices_np /= 100 # convert to meters
-            croped_vertices = Patchwork_init.pcc(vertices_np)
+            vertices_np /= 100  # convert to meters
+            patchwork = Patchwork_init()
+            croped_vertices = pcd_cropper(vertices_np)
+            patchwork.PatchworkPLUSPLUS.estimateGround(croped_vertices)
             print("estimate ground")
             # Get Ground and Nonground
-            ground      = Patchwork_init.PatchworkPLUSPLUS.getGround()
-            nonground   = Patchwork_init.PatchworkPLUSPLUS.getNonground()
-            time_taken  = Patchwork_init.PatchworkPLUSPLUS.getTimeTaken()
+            ground      = patchwork.PatchworkPLUSPLUS.getGround()
+            nonground   = patchwork.PatchworkPLUSPLUS.getNonground()
+            time_taken  = patchwork.PatchworkPLUSPLUS.getTimeTaken()
 
             # Get centers and normals for patches
-            centers     = Patchwork_init.PatchworkPLUSPLUS.getCenters()
-            normals     = Patchwork_init.PatchworkPLUSPLUS.getNormals()
+            centers     = patchwork.PatchworkPLUSPLUS.getCenters()
+            normals     = patchwork.PatchworkPLUSPLUS.getNormals()
                 #print("Origianl Points  #: ", croped_vertices.shape[0])
                 #print("Ground Points    #: ", ground.shape[0])
                 #print("Nonground Points #: ", nonground.shape[0])
@@ -64,15 +67,17 @@ def split_lidar_record_to_frames(record_path,num_of_frames, format, output_path,
                 croped_vertices = np.concatenate((norm_vertices_y,norm_vertices_z, norm_vertices_x), axis=1)
             else:
                 croped_vertices = np.concatenate((croped_vertices[:, 1].reshape(-1,1),croped_vertices[:, 0].reshape(-1,1), croped_vertices[:, 2].reshape(-1,1), croped_vertices[:,3].reshape(-1,1)), axis=1)
-            if format in ['pcd', 'ply']:
-                pcd = o3d.geometry.PointCloud()
-                pcd.points = o3d.utility.Vector3dVector(croped_vertices[:,:3]) # no intesity include here
-                o3d.io.write_point_cloud(os.path.join(output_path,f"{frame_num}.{format}"), pcd)
-            elif format == 'bin':
-                croped_vertices.astype(np.float32).tofile(os.path.join(output_path,f"{frame_num}.bin"))
+            #if format in ['pcd', 'ply']:
+            #    pcd = o3d.geometry.PointCloud()
+            #    pcd.points = o3d.utility.Vector3dVector(croped_vertices[:,:3]) # no intesity include here
+            #    o3d.io.write_point_cloud(os.path.join(output_path,f"{frame_num}.{format}"), pcd)
+            #elif format == 'bin':
+            #    croped_vertices.astype(np.float32).tofile(os.path.join(output_path,f"{frame_num}.bin"))
 
 def visulaize_frames(temp_frame_queue):
-    frame_params = frame_queue.get(timeout=1)  # Timeout is optional
+    frame_params = temp_frame_queue.get(timeout=1)  # Timeout is optional
+    vis = o3d.visualization.VisualizerWithKeyCallback()
+    vis.create_window(width=600, height=400)
     mesh = o3d.geometry.TriangleMesh.create_coordinate_frame()
     ground_o3d = o3d.geometry.PointCloud()
     ground_o3d.points = o3d.utility.Vector3dVector(frame_params.ground)
@@ -98,8 +103,11 @@ def visulaize_frames(temp_frame_queue):
     vis.add_geometry(ground_o3d)
     vis.add_geometry(nonground_o3d)
     vis.add_geometry(centers_o3d)
-    while not temp_frame_queue.empty:
+    frame_count = 0
+    while not temp_frame_queue.empty():
         frame_params = temp_frame_queue.get(timeout=1)  # Timeout is optional
+        frame_count += 1
+        print("frame count = ", frame_count)
         ground_o3d.points = o3d.utility.Vector3dVector(frame_params.ground)
         if frame_params.ground.shape[0] != 0:
             ground_o3d.colors = o3d.utility.Vector3dVector(
@@ -118,7 +126,7 @@ def visulaize_frames(temp_frame_queue):
         vis.update_geometry(centers_o3d)
         vis.poll_events()
         vis.update_renderer()
-            #time.sleep(0.01)
+        #time.sleep(0.01)
     vis.destroy_window()
     print("The End:)")
 
@@ -143,5 +151,6 @@ if __name__ == "__main__":
     frame_queue = queue.Queue()
     #process the data
     split_lidar_record_to_frames(args.record_path, args.num_of_frames, args.format, args.save_path, pcd_cropper, frame_queue, args.normalize, )
+    print("queue empty?", frame_queue.empty())
     #visualize
     visulaize_frames(frame_queue)
