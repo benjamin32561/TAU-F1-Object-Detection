@@ -19,12 +19,14 @@ except ImportError:
 
 
 class FrameParameters:
-    def __init__(self, ground, nonground, timetaken, centers, normals):
+    def __init__(self, ground, non_ground, object_pixels=None, timetaken=None, centers=None, normals=None):
         self.ground = ground
-        self.nonground = nonground
+        self.non_ground = non_ground
+        self.object_pixels = object_pixels
         self.timetaken = timetaken
         self.centers = centers
         self.normals = normals
+
 
 
 class PointCloudCropper(object):
@@ -45,7 +47,7 @@ class Patchwork_init:
         #Patchwork++ initialization
         params = pypatchworkpp.Parameters()         #change sensor heights,elevation
         params.verbose = True
-        params.sensor_height = 0.8
-        params.elevation_thr= [-0.8,-0.2,0.2,0.8]
+        params.sensor_height = 1.20
+        params.elevation_thr= [0,0,0.2,0.8] #should be positive
         self.PatchworkPLUSPLUS = pypatchworkpp.patchworkpp(params)
         self.pcc = PointCloudCropper(x_min=3, x_max=15, y_max=10, y_min=-10, z_max=3, z_min=-1)

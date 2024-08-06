@@ -1,14 +1,14 @@
-import numpy as np
-from innopy.api import FileReader, FrameDataAttributes, GrabType
-from sklearn.preprocessing import minmax_scale
-import open3d as o3d
-import argparse
-import os
-import queue
 import sys
-from classes import FrameParameters, PointCloudCropper, Patchwork_init
-
-#build path
+import threading
+import queue
+from concurrent.futures import ThreadPoolExecutor
+import random
+from time import sleep
+import open3d as o3d
+import asyncio
+import numpy as np
+from classes import PointCloudCropper, FrameParameters
+from innopy.api import FileReader, FrameDataAttributes, GrabType
 target_path = "/home/idola/PycharmProjects/patchwork-plusplus/build/python_wrapper"
 
 try:
@@ -19,138 +19,199 @@ except ImportError:
     print("Cannot find pypatchworkpp!")
     exit(1)
 
+DEFAULT_ATTRS = [FrameDataAttributes(GrabType.GRAB_TYPE_MEASURMENTS_REFLECTION0),
+                      FrameDataAttributes(GrabType.GRAB_TYPE_SINGLE_PIXEL_META_DATA)]
 
-def split_lidar_record_to_frames(record_path,num_of_frames, format, output_path,pcd_cropper, frame_queue, normalize=False):
-    attr = [FrameDataAttributes(GrabType.GRAB_TYPE_MEASURMENTS_REFLECTION0),FrameDataAttributes(GrabType.GRAB_TYPE_SINGLE_PIXEL_META_DATA)]
-    config_path = '/home/idola/PycharmProjects/TAU-F1-Object-Detection/Lidar/innoviz_api/examples/lidar_configuration_files/recording_remove_blooming_config.json'
-    frames = FileReader('/home/idola/PycharmProjects/TAU-F1-Object-Detection/Lidar/processing/Recordings/', num_of_cores=1, config_filepath=config_path)
-    number_of_frames = min(num_of_frames, frames.num_of_frames) if num_of_frames != -1 else frames.num_of_frames
-    for i in range(number_of_frames):
-        frame = frames.get_frame(i, attr)
+
+class PointCloudPatchworkPipeline:
+
+    def __init__(self, config_path, attributes=DEFAULT_ATTRS,
+                 sensor_height=0.8, elevation_thr=[-0.8, -0.2, 0.2, 0.8],
+                 x_min=3, x_max=15, y_max=6, y_min=-6, z_max=3, z_min=-1, verbose=False):
+        self.config_path = config_path
+        self.attributes = attributes
+        self.pcc = PointCloudCropper(x_min=x_min, x_max=x_max, y_max=y_max, y_min=y_min, z_max=z_max, z_min=z_min)
+        self.patchwork = self.init_patchwork(sensor_height, elevation_thr, verbose)
+
+    @staticmethod
+    def init_patchwork(sensor_height, elevation_thr, verbose):
+        params = pypatchworkpp.Parameters()
+        params.verbose = verbose
+        params.sensor_height = sensor_height
+        params.elevation_thr = elevation_thr
+        return pypatchworkpp.patchworkpp(params)
+
+    def process_recording(self, file_path, max_frames=np.inf):
+        frames = FileReader(file_path, num_of_cores=1, config_filepath=self.config_path)
+        for i in range(int(min(max_frames, frames.num_of_frames))):
+            frame, frame_meta = self._get_frame(frames, i)
+            if frame is not None:
+                vertices = self._get_vertices(frame, frame_meta)
+                cropped_vertices = self.pcc(vertices)
+                self.patchwork.estimateGround(cropped_vertices)
+                ground = self.patchwork.getGround()
+                non_ground = self.patchwork.getNonground()
+                frame_patch_map = self._get_patch_map(non_ground)
+                frame_objects_map = self._get_object_map(frame_patch_map, threshold=5)  # need to think about threshold's value
+                time_taken = self.patchwork.getTimeTaken()
+                patchwork_results = FrameParameters(ground, non_ground, frame_objects_map, time_taken)
+                yield patchwork_results
+
+    def _get_frame(self, frames, frame_num):
+        frame = frames.get_frame(frame_num, self.attributes)
         if frame.success:
-            mes = frame.results['GrabType.GRAB_TYPE_MEASURMENTS_REFLECTION0']
-            meta = frame.results['GrabType.GRAB_TYPE_SINGLE_PIXEL_META_DATA']
-            frame_num = frame.frame_number
-            vertices = []
-            for pixel_num in range(len(mes)):
-                if mes['confidence'][pixel_num] > 0 and meta['ghost'][pixel_num] == 0 and meta['noise'][pixel_num] == 0:
-                    vertices.append([mes['x'][pixel_num], mes['y'][pixel_num], mes['z'][pixel_num], mes['reflectivity'][pixel_num]])
-            vertices_np = np.asarray(vertices)
-            vertices_np /= 100  # convert to meters
-            patchwork = Patchwork_init()
-            croped_vertices = pcd_cropper(vertices_np)
-            patchwork.PatchworkPLUSPLUS.estimateGround(croped_vertices)
-            print("estimate ground")
-            # Get Ground and Nonground
-            ground      = patchwork.PatchworkPLUSPLUS.getGround()
-            nonground   = patchwork.PatchworkPLUSPLUS.getNonground()
-            time_taken  = patchwork.PatchworkPLUSPLUS.getTimeTaken()
+            return frame.results['GrabType.GRAB_TYPE_MEASURMENTS_REFLECTION0'], frame.results['GrabType.GRAB_TYPE_SINGLE_PIXEL_META_DATA']
+        return None, None
 
-            # Get centers and normals for patches
-            centers     = patchwork.PatchworkPLUSPLUS.getCenters()
-            normals     = patchwork.PatchworkPLUSPLUS.getNormals()
-                #print("Origianl Points  #: ", croped_vertices.shape[0])
-                #print("Ground Points    #: ", ground.shape[0])
-                #print("Nonground Points #: ", nonground.shape[0])
-                #print("Time Taken : ", time_taken / 1000000, "(sec)")
-                #print("Press ... \n")
-                #print("\t H  : help")
-                #print("\t N  : visualize the surface normals")
-                #print("\tESC : close the Open3D window")
-                # Add the frame parameters to the queue
-            frame_params = FrameParameters(ground, nonground, time_taken, centers, normals)
-            frame_queue.put(frame_params)
-            if normalize:
-                norm_vertices_x = minmax_scale(croped_vertices[:, 0].reshape(-1,1), feature_range=(0, 1))
-                norm_vertices_y = minmax_scale(croped_vertices[:, 1].reshape(-1,1), feature_range=(-1, 1))
-                norm_vertices_z = minmax_scale(croped_vertices[:, 2].reshape(-1, 1), feature_range=(0, 1))
-                croped_vertices = np.concatenate((norm_vertices_y,norm_vertices_z, norm_vertices_x), axis=1)
+    @staticmethod
+    def _get_vertices(frame, frame_meta):
+        vertices = []
+        for pixel_num in range(len(frame)):
+            if frame['confidence'][pixel_num] > 0 and frame_meta['ghost'][pixel_num] == 0 and frame_meta['noise'][pixel_num] == 0:
+                vertices.append([frame['x'][pixel_num], frame['y'][pixel_num], frame['z'][pixel_num], frame['reflectivity'][pixel_num]])
+        return np.asarray(vertices)/100
+
+    def _get_patch_map(self, non_ground):
+        # Use a dictionary to store unique pixels based on a unique identifier
+        unique_patches = {}
+        # Iterate through each pixel and use a unique combination of distance, ring, and sector as a key
+        for pixel in non_ground:
+            patch = tuple(pixel[-3:])  # 3: ring ; 4: sector ; 5: zone
+            if patch in unique_patches.keys():
+                unique_patches[patch].append(pixel[:3])
             else:
-                croped_vertices = np.concatenate((croped_vertices[:, 1].reshape(-1,1),croped_vertices[:, 0].reshape(-1,1), croped_vertices[:, 2].reshape(-1,1), croped_vertices[:,3].reshape(-1,1)), axis=1)
-            #if format in ['pcd', 'ply']:
-            #    pcd = o3d.geometry.PointCloud()
-            #    pcd.points = o3d.utility.Vector3dVector(croped_vertices[:,:3]) # no intesity include here
-            #    o3d.io.write_point_cloud(os.path.join(output_path,f"{frame_num}.{format}"), pcd)
-            #elif format == 'bin':
-            #    croped_vertices.astype(np.float32).tofile(os.path.join(output_path,f"{frame_num}.bin"))
+                unique_patches[patch] = [pixel[:3]]
+        return unique_patches
 
-def visulaize_frames(temp_frame_queue):
-    frame_params = temp_frame_queue.get(timeout=1)  # Timeout is optional
-    vis = o3d.visualization.VisualizerWithKeyCallback()
-    vis.create_window(width=600, height=400)
-    mesh = o3d.geometry.TriangleMesh.create_coordinate_frame()
-    ground_o3d = o3d.geometry.PointCloud()
-    ground_o3d.points = o3d.utility.Vector3dVector(frame_params.ground)
+    def _get_object_map(self, hash, threshold):
+        object_table = {}
+        for patch in hash.keys():
+            if len(hash[patch]) > threshold:
+                object_table[patch] = hash[patch]  # copy only objects
+        return object_table
 
-    if frame_params.ground.shape[0] != 0:
-        ground_o3d.colors = o3d.utility.Vector3dVector(
-            np.array([[0.0, 1.0, 0.0] for _ in range(frame_params.ground.shape[0])], dtype=float))  # RGB
 
-    nonground_o3d = o3d.geometry.PointCloud()
-    nonground_o3d.points = o3d.utility.Vector3dVector(frame_params.nonground)
-    if frame_params.nonground.shape[0] != 0:
-        nonground_o3d.colors = o3d.utility.Vector3dVector(
-            np.array([[1.0, 0.0, 0.0] for _ in range(frame_params.nonground.shape[0])], dtype=float))  # RGB
+class PointCloudVisualizer:
+    def __init__(self, width=640, height=480):  # Default size is 640x480, adjust as needed
+        self.vis = o3d.visualization.Visualizer()
+        self.vis.create_window(width=width, height=height)
+        self.ground_pcd = o3d.geometry.PointCloud()
+        self.non_ground_pcd = o3d.geometry.PointCloud()
+        self.vis.add_geometry(self.ground_pcd)
+        #self.vis.add_geometry(self.non_ground_pcd)
+        self.initialized = False
+        self.objects_pcd = []  # List to store point clouds
+        self.bounded_o3d_objects = []  # List to store bounding boxes
 
-    centers_o3d = o3d.geometry.PointCloud()
-    centers_o3d.points = o3d.utility.Vector3dVector(frame_params.centers)
-    centers_o3d.normals = o3d.utility.Vector3dVector(frame_params.normals)
-    if frame_params.centers.shape[0] != 0:
-        centers_o3d.colors = o3d.utility.Vector3dVector(
-            np.array([[1.0, 1.0, 0.0] for _ in range(frame_params.centers.shape[0])], dtype=float))  # RGB
+    def init_bbox(self, object_pixels):
+        for patch in object_pixels.keys():
+            object_points = object_pixels[patch]
+            objects_o3d = o3d.geometry.PointCloud()
+            objects_o3d.points = o3d.utility.Vector3dVector(object_points)
+            random_color = [random.random(), random.random(), random.random()]
+            objects_o3d.paint_uniform_color(random_color)
+            self.objects_pcd.append(objects_o3d)
+            bbox = objects_o3d.get_axis_aligned_bounding_box()
+            bbox.color = [255, 0, 0]
+            self.bounded_o3d_objects.append(bbox)
+            self.vis.add_geometry(bbox)
+        #for bbox, pcd in zip(self.bounded_o3d_objects, self.objects_pcd):
+            self.vis.add_geometry(objects_o3d)
 
-    vis.add_geometry(mesh)
-    vis.add_geometry(ground_o3d)
-    vis.add_geometry(nonground_o3d)
-    vis.add_geometry(centers_o3d)
-    frame_count = 0
-    while not temp_frame_queue.empty():
-        frame_params = temp_frame_queue.get(timeout=1)  # Timeout is optional
-        frame_count += 1
-        print("frame count = ", frame_count)
-        ground_o3d.points = o3d.utility.Vector3dVector(frame_params.ground)
-        if frame_params.ground.shape[0] != 0:
-            ground_o3d.colors = o3d.utility.Vector3dVector(
-                np.array([[0.0, 1.0, 0.0] for _ in range(frame_params.ground.shape[0])], dtype=float))  # RGB
-        nonground_o3d.points = o3d.utility.Vector3dVector(frame_params.nonground)
-        if frame_params.nonground.shape[0] != 0:
-            nonground_o3d.colors = o3d.utility.Vector3dVector(
-                np.array([[1.0, 0.0, 0.0] for _ in range(frame_params.nonground.shape[0])], dtype=float))  # RGB
-        centers_o3d.points = o3d.utility.Vector3dVector(frame_params.centers)
-        centers_o3d.normals = o3d.utility.Vector3dVector(frame_params.normals)
-        if frame_params.centers.shape[0] != 0:
-            centers_o3d.colors = o3d.utility.Vector3dVector(
-                np.array([[1.0, 1.0, 0.0] for _ in range(frame_params.centers.shape[0])], dtype=float))  # RGB
-        vis.update_geometry(ground_o3d)
-        vis.update_geometry(nonground_o3d)
-        vis.update_geometry(centers_o3d)
-        vis.poll_events()
-        vis.update_renderer()
-        #time.sleep(0.01)
-    vis.destroy_window()
-    print("The End:)")
+    def update_bbox(self, object_pixels):
+        # Remove existing point clouds and bounding boxes
+        for pcd, bbox in zip(self.objects_pcd, self.bounded_o3d_objects):
+            self.vis.remove_geometry(pcd)
+            self.vis.remove_geometry(bbox)
 
+        # Clear the lists of point clouds and bounded objects
+        self.objects_pcd.clear()
+        self.bounded_o3d_objects.clear()
+
+        # Re-initialize point clouds and bounding boxes
+        for patch in object_pixels.keys():
+            object_points = object_pixels[patch]
+            objects_o3d = o3d.geometry.PointCloud()
+            objects_o3d.points = o3d.utility.Vector3dVector(object_points)
+            random_color = [random.random(), random.random(), random.random()]
+            objects_o3d.paint_uniform_color(random_color)
+            self.objects_pcd.append(objects_o3d)
+            # Recalculate the bounding box based on the updated point cloud data
+            bbox = objects_o3d.get_axis_aligned_bounding_box()
+            bbox.color = [255, 0, 0]
+            #print("max bound = ", max_bound, "\n")
+            self.vis.add_geometry(bbox)
+            # Add the updated point cloud and bounding box to the visualizer
+            self.vis.add_geometry(objects_o3d)
+            # Add the bounding box to the list of bounded objects
+            self.bounded_o3d_objects.append(bbox)
+
+    def run(self, processed_frames_queue):
+        while True:
+            try:
+                patchwork_results = processed_frames_queue.get(timeout=1)
+                if patchwork_results is None:
+                    break
+                self.update_visualization(patchwork_results)
+            except queue.Empty:
+                sleep(1)
+                continue
+            self.vis.poll_events()
+
+    def update_visualization(self, patchwork_results):
+        # Update point cloud data
+        self.ground_pcd.points = o3d.utility.Vector3dVector(patchwork_results.ground[:, :3])
+        self.non_ground_pcd.points = o3d.utility.Vector3dVector(patchwork_results.non_ground[:, :3])
+
+        # Update colors if available and needed
+        if patchwork_results.ground.shape[1] > 3:
+            self.ground_pcd.colors = o3d.utility.Vector3dVector(
+                np.array([[0.0, 1.0, 0.0] for _ in range(patchwork_results.ground[:, 3:].shape[0])], dtype=float))  # RGB patchwork_results.ground[:, 3:])
+
+        if patchwork_results.non_ground.shape[1] > 3:
+            self.non_ground_pcd.colors = o3d.utility.Vector3dVector(patchwork_results.non_ground[:, 3:])
+
+        # Only add the geometries to the visualizer once
+        if not self.initialized:
+            self.vis.add_geometry(self.ground_pcd)
+            #self.vis.add_geometry(self.non_ground_pcd)
+            self.init_bbox(patchwork_results.object_pixels)
+            self.initialized = True
+
+        # This is all you need to update the visualization
+        self.vis.update_geometry(self.ground_pcd)
+        #self.vis.update_geometry(self.non_ground_pcd)
+        self.update_bbox(patchwork_results.object_pixels)
+        self.vis.update_renderer()
+
+    def close(self):
+        self.vis.destroy_window()
+
+
+def process_point_clouds(file_path, config_path, processed_frames_queue):
+    pipeline = PointCloudPatchworkPipeline(config_path)
+    for patchwork_results in pipeline.process_recording(file_path):
+        processed_frames_queue.put(patchwork_results)
+    processed_frames_queue.put(None)  # Signal that processing is complete
+
+
+def main():
+    file_path = '/home/idola/PycharmProjects/TAU-F1-Object-Detection/Lidar/processing/Recordings'
+    config_path = '/home/idola/PycharmProjects/TAU-F1-Object-Detection/Lidar/innoviz_api/examples/lidar_configuration_files/recording_remove_blooming_config.json'
+    processed_frames_queue = queue.Queue(maxsize=20)
+
+    processing_thread = threading.Thread(target=process_point_clouds,
+                                         args=(file_path, config_path, processed_frames_queue))
+    processing_thread.start()
+    sleep(5)
+    visualizer = PointCloudVisualizer()
+    try:
+        visualizer.run(processed_frames_queue)
+    finally:
+        visualizer.close()
+
+    processing_thread.join()
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--record_path', type=str, required=True, help='path to the lidar record')
-    parser.add_argument('--num_of_frames', type=int, default=-1,help = 'number of frames to process, -1 for all frames. default is -1')
-    parser.add_argument('--format', type=str, default='pcd', choices=['bin', 'pcd', 'ply'], help='output format, default is pcd')
-    parser.add_argument('--save_path', type=str, default='./dataset', help='path to save the frames')
-    parser.add_argument('--normalize', type=bool, default=False, help='normalize the point cloud to [0,1] range default is False')
-    parser.add_argument('--x_min', type=float, default=3, help='x min value to crop point cloud default=3 meters')
-    parser.add_argument('--x_max', type=float, default=15, help='x max value to crop point cloud default=15 meters')
-    parser.add_argument('--y_min', type=float, default=-10, help='y min value to crop point cloud default=-10 meters')
-    parser.add_argument('--y_max', type=float, default=10, help='y max value to crop point cloud default=10 meters')
-    parser.add_argument('--z_min', type=float, default=-1, help='z min value to crop point cloud default=-1 meters')
-    parser.add_argument('--z_max', type=float, default=3, help='z max value to crop point cloud default=3 meters')
-    args = parser.parse_args()
-    pcd_cropper = PointCloudCropper(args.x_min, args.x_max, args.y_min, args.y_max, args.z_min, args.z_max)
-    # Create a queue
-    frame_queue = queue.Queue()
-    #process the data
-    split_lidar_record_to_frames(args.record_path, args.num_of_frames, args.format, args.save_path, pcd_cropper, frame_queue, args.normalize, )
-    print("queue empty?", frame_queue.empty())
-    #visualize
-    visulaize_frames(frame_queue)
+    main()
