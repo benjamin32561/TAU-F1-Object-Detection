@@ -9,6 +9,7 @@ import asyncio
 import numpy as np
 from classes import PointCloudCropper, FrameParameters
 from innopy.api import FileReader, FrameDataAttributes, GrabType
+
 target_path = "/home/idola/PycharmProjects/patchwork-plusplus/build/python_wrapper"
 
 try:
@@ -20,7 +21,7 @@ except ImportError:
     exit(1)
 
 DEFAULT_ATTRS = [FrameDataAttributes(GrabType.GRAB_TYPE_MEASURMENTS_REFLECTION0),
-                      FrameDataAttributes(GrabType.GRAB_TYPE_SINGLE_PIXEL_META_DATA)]
+                 FrameDataAttributes(GrabType.GRAB_TYPE_SINGLE_PIXEL_META_DATA)]
 
 
 class PointCloudPatchworkPipeline:
@@ -52,7 +53,8 @@ class PointCloudPatchworkPipeline:
                 ground = self.patchwork.getGround()
                 non_ground = self.patchwork.getNonground()
                 frame_patch_map = self._get_patch_map(non_ground)
-                frame_objects_map = self._get_object_map(frame_patch_map, threshold=5)  # need to think about threshold's value
+                frame_objects_map = self._get_object_map(frame_patch_map,
+                                                         threshold=5)  # need to think about threshold's value
                 time_taken = self.patchwork.getTimeTaken()
                 patchwork_results = FrameParameters(ground, non_ground, frame_objects_map, time_taken)
                 yield patchwork_results
@@ -60,16 +62,19 @@ class PointCloudPatchworkPipeline:
     def _get_frame(self, frames, frame_num):
         frame = frames.get_frame(frame_num, self.attributes)
         if frame.success:
-            return frame.results['GrabType.GRAB_TYPE_MEASURMENTS_REFLECTION0'], frame.results['GrabType.GRAB_TYPE_SINGLE_PIXEL_META_DATA']
+            return frame.results['GrabType.GRAB_TYPE_MEASURMENTS_REFLECTION0'], frame.results[
+                'GrabType.GRAB_TYPE_SINGLE_PIXEL_META_DATA']
         return None, None
 
     @staticmethod
     def _get_vertices(frame, frame_meta):
         vertices = []
         for pixel_num in range(len(frame)):
-            if frame['confidence'][pixel_num] > 0 and frame_meta['ghost'][pixel_num] == 0 and frame_meta['noise'][pixel_num] == 0:
-                vertices.append([frame['x'][pixel_num], frame['y'][pixel_num], frame['z'][pixel_num], frame['reflectivity'][pixel_num]])
-        return np.asarray(vertices)/100
+            if frame['confidence'][pixel_num] > 0 and frame_meta['ghost'][pixel_num] == 0 and frame_meta['noise'][
+                pixel_num] == 0:
+                vertices.append(
+                    [frame['x'][pixel_num], frame['y'][pixel_num], frame['z'][pixel_num], frame['reflectivity'][pixel_num]])
+        return np.asarray(vertices) / 100
 
     def _get_patch_map(self, non_ground):
         # Use a dictionary to store unique pixels based on a unique identifier
@@ -98,7 +103,7 @@ class PointCloudVisualizer:
         self.ground_pcd = o3d.geometry.PointCloud()
         self.non_ground_pcd = o3d.geometry.PointCloud()
         self.vis.add_geometry(self.ground_pcd)
-        #self.vis.add_geometry(self.non_ground_pcd)
+        # self.vis.add_geometry(self.non_ground_pcd)
         self.initialized = False
         self.objects_pcd = []  # List to store point clouds
         self.bounded_o3d_objects = []  # List to store bounding boxes
@@ -115,7 +120,6 @@ class PointCloudVisualizer:
             bbox.color = [255, 0, 0]
             self.bounded_o3d_objects.append(bbox)
             self.vis.add_geometry(bbox)
-        #for bbox, pcd in zip(self.bounded_o3d_objects, self.objects_pcd):
             self.vis.add_geometry(objects_o3d)
 
     def update_bbox(self, object_pixels):
@@ -139,12 +143,20 @@ class PointCloudVisualizer:
             # Recalculate the bounding box based on the updated point cloud data
             bbox = objects_o3d.get_axis_aligned_bounding_box()
             bbox.color = [255, 0, 0]
-            #print("max bound = ", max_bound, "\n")
             self.vis.add_geometry(bbox)
             # Add the updated point cloud and bounding box to the visualizer
             self.vis.add_geometry(objects_o3d)
             # Add the bounding box to the list of bounded objects
             self.bounded_o3d_objects.append(bbox)
+
+        # Print centers of the bounding boxes
+        #self.print_bbox_centers()
+
+    def print_bbox_centers(self):
+        print("Bounding Box Centers:")
+        for bbox in self.bounded_o3d_objects:
+            center = bbox.get_center()
+            print(f"Center: {center}")
 
     def run(self, processed_frames_queue):
         while True:
@@ -166,7 +178,8 @@ class PointCloudVisualizer:
         # Update colors if available and needed
         if patchwork_results.ground.shape[1] > 3:
             self.ground_pcd.colors = o3d.utility.Vector3dVector(
-                np.array([[0.0, 1.0, 0.0] for _ in range(patchwork_results.ground[:, 3:].shape[0])], dtype=float))  # RGB patchwork_results.ground[:, 3:])
+                np.array([[0.0, 1.0, 0.0] for _ in range(patchwork_results.ground[:, 3:].shape[0])],
+                         dtype=float))  # RGB patchwork_results.ground[:, 3:])
 
         if patchwork_results.non_ground.shape[1] > 3:
             self.non_ground_pcd.colors = o3d.utility.Vector3dVector(patchwork_results.non_ground[:, 3:])
@@ -174,13 +187,13 @@ class PointCloudVisualizer:
         # Only add the geometries to the visualizer once
         if not self.initialized:
             self.vis.add_geometry(self.ground_pcd)
-            #self.vis.add_geometry(self.non_ground_pcd)
+            # self.vis.add_geometry(self.non_ground_pcd)
             self.init_bbox(patchwork_results.object_pixels)
             self.initialized = True
 
         # This is all you need to update the visualization
         self.vis.update_geometry(self.ground_pcd)
-        #self.vis.update_geometry(self.non_ground_pcd)
+        # self.vis.update_geometry(self.non_ground_pcd)
         self.update_bbox(patchwork_results.object_pixels)
         self.vis.update_renderer()
 
